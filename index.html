@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ফার্মেসি ম্যানেজমেন্ট অ্যাপ</title>
+  <link href="./dist/style.css" rel="stylesheet">
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.22.9/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState } = React;
+
+    const App = () => {
+      const [isLoggedIn, setIsLoggedIn] = useState(false);
+      const [isRegistering, setIsRegistering] = useState(false);
+      const [pharmacyInfo, setPharmacyInfo] = useState({
+        name: '',
+        owner: '',
+        license: '',
+        address: '',
+        phone: '',
+        email: ''
+      });
+
+      const handleRegister = (e) => {
+        e.preventDefault();
+        console.log('Pharmacy Info:', pharmacyInfo);
+        setIsLoggedIn(true);
+        setIsRegistering(false);
+      };
+
+      const handleInputChange = (e) => {
+        setPharmacyInfo({ ...pharmacyInfo, [e.target.name]: e.target.value });
+      };
+
+      return (
+        <div className="min-h-screen bg-gray-100 flex flex-col items-center p-4">
+          <h1 className="text-3xl font-bold mb-6">ফার্মেসি ম্যানেজমেন্ট অ্যাপ</h1>
+          
+          {!isLoggedIn ? (
+            <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
+              {isRegistering ? (
+                <>
+                  <h2 className="text-2xl font-semibold mb-4">ফার্মেসি রেজিস্ট্রেশন</h2>
+                  <form onSubmit={handleRegister} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">ফার্মেসির নাম</label>
+                      <input
+                        type="text"
+                        name="name"
+                        value={pharmacyInfo.name}
+                        onChange={handleInputChange}
+                        className="mt-1 block w-full p-2 border rounded-md"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">মালিকের নাম</label>
+                      <input
+                        type="text"
+                        name="owner"
+                        value={pharmacyInfo.owner}
+                        onChange={handleInputChange}
+                        className="mt-1 block w-full p-2 border rounded-md"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">লাইসেন্স নম্বর</label>
+                      <input
+                        type="text"
+                        name="license"
+                        value={pharmacyInfo.license}
+                        onChange={handleInputChange}
+                        className="mt-1 block w-full p-2 border rounded-md"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">ঠিকানা</label>
+                      <input
+                        type="text"
+                        name="address"
+                        value={pharmacyInfo.address}
+                        onChange={handleInputChange}
+                        className="mt-1 block w-full p-2 border rounded-md"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">ফোন নম্বর</label>
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={pharmacyInfo.phone}
+                        onChange={handleInputChange}
+                        className="mt-1 block w-full p-2 border rounded-md"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">ইমেইল</label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={pharmacyInfo.email}
+                        onChange={handleInputChange}
+                        className="mt-1 block w-full p-2 border rounded-md"
+                        required
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700"
+                    >
+                      রেজিস্টার করুন
+                    </button>
+                  </form>
+                  <p className="mt-4 text-center">
+                    ইতিমধ্যে একাউন্ট আছে?{' '}
+                    <button
+                      onClick={() => setIsRegistering(false)}
+                      className="text-blue-600 hover:underline"
+                    >
+                      লগইন করুন
+                    </button>
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h2 className="text-2xl font-semibold mb-4">লগইন</h2>
+                  <form className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">ইমেইল</label>
+                      <input
+                        type="email"
+                        className="mt-1 block w-full p-2 border rounded-md"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">পাসওয়ার্ড</label>
+                      <input
+                        type="password"
+                        className="mt-1 block w-full p-2 border rounded-md"
+                        required
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsLoggedIn(true)}
+                      className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700"
+                    >
+                      লগইন
+                    </button>
+                  </form>
+                  <p className="mt-4 text-center">
+                    নতুন ব্যবহারকারী?{' '}
+                    <button
+                      onClick={() => setIsRegistering(true)}
+                      className="text-blue-600 hover:underline"
+                    >
+                      রেজিস্টার করুন
+                    </button>
+                  </p>
+                </>
+              )}
+            </div>
+          ) : (
+            <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
+              <h2 className="text-2xl font-semibold mb-4">স্বাগতম!</h2>
+              <p>ফার্মেসির নাম: {pharmacyInfo.name}</p>
+              <p>মালিক: {pharmacyInfo.owner}</p>
+              <p>লাইসেন্স নম্বর: {pharmacyInfo.license}</p>
+              <p>ঠিকানা: {pharmacyInfo.address}</p>
+              <p>ফোন: {pharmacyInfo.phone}</p>
+              <p>ইমেইল: {pharmacyInfo.email}</p>
+              <button
+                onClick={() => setIsLoggedIn(false)}
+                className="mt-4 w-full bg-red-600 text-white p-2 rounded-md hover:bg-red-700"
+              >
+                লগআউট
+              </button>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
