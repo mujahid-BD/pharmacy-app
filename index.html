@@ -25,6 +25,10 @@
         phone: '',
         email: ''
       });
+      const [medicines, setMedicines] = useState([
+        { id: 1, name: 'প্যারাসিটামল', generic: 'Paracetamol', company: 'Square', stock: 100, expiry: '2025-12-31' },
+        { id: 2, name: 'নাপা', generic: 'Paracetamol', company: 'Beximco', stock: 50, expiry: '2025-06-30' }
+      ]);
 
       const handleRegister = (e) => {
         e.preventDefault();
@@ -35,6 +39,20 @@
 
       const handleInputChange = (e) => {
         setPharmacyInfo({ ...pharmacyInfo, [e.target.name]: e.target.value });
+      };
+
+      const handleAddMedicine = (e) => {
+        e.preventDefault();
+        const newMedicine = {
+          id: medicines.length + 1,
+          name: e.target.name.value,
+          generic: e.target.generic.value,
+          company: e.target.company.value,
+          stock: parseInt(e.target.stock.value),
+          expiry: e.target.expiry.value
+        };
+        setMedicines([...medicines, newMedicine]);
+        e.target.reset();
       };
 
       return (
@@ -171,20 +189,117 @@
               )}
             </div>
           ) : (
-            <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
-              <h2 className="text-2xl font-semibold mb-4">স্বাগতম!</h2>
-              <p>ফার্মেসির নাম: {pharmacyInfo.name}</p>
-              <p>মালিক: {pharmacyInfo.owner}</p>
-              <p>লাইসেন্স নম্বর: {pharmacyInfo.license}</p>
-              <p>ঠিকানা: {pharmacyInfo.address}</p>
-              <p>ফোন: {pharmacyInfo.phone}</p>
-              <p>ইমেইল: {pharmacyInfo.email}</p>
-              <button
-                onClick={() => setIsLoggedIn(false)}
-                className="mt-4 w-full bg-red-600 text-white p-2 rounded-md hover:bg-red-700"
-              >
-                লগআউট
-              </button>
+            <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-4xl">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-semibold">স্বাগতম, {pharmacyInfo.owner}!</h2>
+                <button
+                  onClick={() => setIsLoggedIn(false)}
+                  className="bg-red-600 text-white p-2 rounded-md hover:bg-red-700"
+                >
+                  লগআউট
+                </button>
+              </div>
+
+              {/* ফার্মেসি তথ্য */}
+              <div className="mb-6">
+                <h3 className="text-xl font-semibold mb-2">ফার্মেসির তথ্য</h3>
+                <p>ফার্মেসির নাম: {pharmacyInfo.name}</p>
+                <p>লাইসেন্স নম্বর: {pharmacyInfo.license}</p>
+                <p>ঠিকানা: {pharmacyInfo.address}</p>
+                <p>ফোন: {pharmacyInfo.phone}</p>
+                <p>ইমেইল: {pharmacyInfo.email}</p>
+              </div>
+
+              {/* ফ্রি ট্রায়াল স্ট্যাটাস */}
+              <div className="mb-6 p-4 bg-blue-100 rounded-md">
+                <p className="text-blue-800">আপনার ৩০ দিনের ফ্রি ট্রায়াল চলছে। বাকি আছে: ২৮ দিন।</p>
+                <button className="mt-2 text-blue-600 hover:underline">প্ল্যান আপগ্রেড করুন</button>
+              </div>
+
+              {/* নতুন ওষুধ যোগ করার ফর্ম */}
+              <div className="mb-6">
+                <h3 className="text-xl font-semibold mb-2">নতুন ওষুধ যোগ করুন</h3>
+                <form onSubmit={handleAddMedicine} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">ওষুধের নাম</label>
+                    <input
+                      type="text"
+                      name="name"
+                      className="mt-1 block w-full p-2 border rounded-md"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">জেনেরিক নাম</label>
+                    <input
+                      type="text"
+                      name="generic"
+                      className="mt-1 block w-full p-2 border rounded-md"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">কোম্পানির নাম</label>
+                    <input
+                      type="text"
+                      name="company"
+                      className="mt-1 block w-full p-2 border rounded-md"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">স্টক সংখ্যা</label>
+                    <input
+                      type="number"
+                      name="stock"
+                      className="mt-1 block w-full p-2 border rounded-md"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">মেয়াদোত্তীর্ণ তারিখ</label>
+                    <input
+                      type="date"
+                      name="expiry"
+                      className="mt-1 block w-full p-2 border rounded-md"
+                      required
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700"
+                  >
+                    ওষুধ যোগ করুন
+                  </button>
+                </form>
+              </div>
+
+              {/* ওষুধের তালিকা */}
+              <div>
+                <h3 className="text-xl font-semibold mb-2">ইনভেন্টরি ওভারভিউ</h3>
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-gray-200">
+                      <th className="border p-2">ওষুধের নাম</th>
+                      <th className="border p-2">জেনেরিক নাম</th>
+                      <th className="border p-2">কোম্পানি</th>
+                      <th className="border p-2">স্টক</th>
+                      <th className="border p-2">মেয়াদোত্তীর্ণ তারিখ</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {medicines.map(medicine => (
+                      <tr key={medicine.id} className="border">
+                        <td className="border p-2">{medicine.name}</td>
+                        <td className="border p-2">{medicine.generic}</td>
+                        <td className="border p-2">{medicine.company}</td>
+                        <td className="border p-2">{medicine.stock}</td>
+                        <td className="border p-2">{medicine.expiry}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>
