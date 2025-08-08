@@ -8,11 +8,12 @@
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone@7.22.9/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 </head>
 <body>
   <div id="root"></div>
   <script type="text/babel">
-    const { useState } = React;
+    const { useState, useEffect } = React;
 
     const App = () => {
       const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -32,6 +33,10 @@
       const [medicines, setMedicines] = useState([
         { id: 1, name: 'প্যারাসিটামল', generic: 'Paracetamol', company: 'Square', stock: 100, expiry: '2025-12-31' },
         { id: 2, name: 'নাপা', generic: 'Paracetamol', company: 'Beximco', stock: 50, expiry: '2025-06-30' }
+      ]);
+      const [sales, setSales] = useState([
+        { id: 1, medicineName: 'প্যারাসিটামল', quantity: 10, date: '2025-08-01', totalPrice: 100 },
+        { id: 2, medicineName: 'নাপা', quantity: 5, date: '2025-08-02', totalPrice: 60 }
       ]);
 
       const handleRegister = (e) => {
@@ -80,6 +85,54 @@
         console.log('Updated Pharmacy Info:', pharmacyInfo);
         setCurrentPage('dashboard');
       };
+
+      const handleAddSale = (e) => {
+        e.preventDefault();
+        const newSale = {
+          id: sales.length + 1,
+          medicineName: e.target.medicineName.value,
+          quantity: parseInt(e.target.quantity.value),
+          date: e.target.date.value,
+          totalPrice: parseFloat(e.target.totalPrice.value)
+        };
+        setSales([...sales, newSale]);
+        e.target.reset();
+      };
+
+      // Chart.js initialization
+      useEffect(() => {
+        if (currentPage === 'sales' && window.Chart) {
+          try {
+            const ctx = document.getElementById('salesChart')?.getContext('2d');
+            if (ctx) {
+              new Chart(ctx, {
+                type: 'bar',
+                data: {
+                  labels: sales.map(sale => sale.date),
+                  datasets: [{
+                    label: 'মোট মূল্য (টাকা)',
+                    data: sales.map(sale => sale.totalPrice),
+                    backgroundColor: '#2563eb',
+                    borderColor: '#1d4ed8',
+                    borderWidth: 1
+                  }]
+                },
+                options: {
+                  scales: {
+                    y: {
+                      beginAtZero: true
+                    }
+                  }
+                }
+              });
+            } else {
+              console.error('Canvas element not found for Chart.js');
+            }
+          } catch (error) {
+            console.error('Error initializing Chart.js:', error);
+          }
+        }
+      }, [currentPage, sales]);
 
       return (
         <div className="min-h-screen bg-gray-100 flex">
@@ -397,8 +450,85 @@
                   {currentPage === 'sales' && (
                     <>
                       <h2 className="text-2xl font-semibold mb-4 text-center">সেলস রিপোর্ট</h2>
-                      <p className="text-gray-700 text-center">এখানে আপনার ফার্মেসির দৈনিক এবং সাপ্তাহিক বিক্রয় রিপোর্ট দেখানো হবে।</p>
-                      <p className="text-gray-700 text-center">এই ফিচারটি পরে যোগ করা হবে।</p>
+                      <div className="mb-6">
+                        <h3 className="text-xl font-semibold mb-2 text-center">নতুন বিক্রয় যোগ করুন</h3>
+                        <form onSubmit={handleAddSale} className="space-y-4 max-w-lg mx-auto">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700">ওষুধের নাম</label>
+                            <select
+                              name="medicineName"
+                              className="mt-1 block w-full p-2 border rounded-md"
+                              required
+                            >
+                              <option value="">ওষুধ নির্বাচন করুন</option>
+                              {medicines.map(medicine => (
+                                <option key={medicine.id} value={medicine.name}>{medicine.name}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700">পরিমাণ</label>
+                            <input
+                              type="number"
+                              name="quantity"
+                              className="mt-1 block w-full p-2 border rounded-md"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700">তারিখ</label>
+                            <input
+                              type="date"
+                              name="date"
+                              className="mt-1 block w-full p-2 border rounded-md"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700">মোট মূল্য (টাকা)</label>
+                            <input
+                              type="number"
+                              name="totalPrice"
+                              step="0.01"
+                              className="mt-1 block w-full p-2 border rounded-md"
+                              required
+                            />
+                          </div>
+                          <button
+                            type="submit"
+                            className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700"
+                          >
+                            বিক্রয় যোগ করুন
+                          </button>
+                        </form>
+                      </div>
+                      <div className="mb-6">
+                        <h3 className="text-xl font-semibold mb-2 text-center">বিক্রয়ের তালিকা</h3>
+                        <table className="w-full border-collapse mx-auto">
+                          <thead>
+                            <tr className="bg-gray-200">
+                              <th className="border p-2">ওষুধের নাম</th>
+                              <th className="border p-2">পরিমাণ</th>
+                              <th className="border p-2">তারিখ</th>
+                              <th className="border p-2">মোট মূল্য (টাকা)</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {sales.map(sale => (
+                              <tr key={sale.id} className="border">
+                                <td className="border p-2 text-center">{sale.medicineName}</td>
+                                <td className="border p-2 text-center">{sale.quantity}</td>
+                                <td className="border p-2 text-center">{sale.date}</td>
+                                <td className="border p-2 text-center">{sale.totalPrice}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-semibold mb-2 text-center">দৈনিক বিক্রয় চার্ট</h3>
+                        <canvas id="salesChart" className="max-w-lg mx-auto"></canvas>
+                      </div>
                     </>
                   )}
 
