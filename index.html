@@ -66,14 +66,35 @@
           salePrice: 2.52, 
           formulation: 'Injection', 
           power: '0.6mg/ml' 
+        },
+        { 
+          id: 4, 
+          name: 'অ্যামোক্সিসিলিন', 
+          generic: 'Amoxicillin', 
+          company: 'Renata', 
+          stock: 8, 
+          expiry: '2025-09-15', 
+          purchasePrice: 3.0, 
+          salePrice: 4.0, 
+          formulation: 'Capsule', 
+          power: '250mg' 
         }
       ]);
       const [sales, setSales] = useState([
         { id: 1, medicineName: 'প্যারাসিটামল', quantity: 10, date: '2025-08-01', totalPrice: 12, profit: 4 },
-        { id: 2, medicineName: 'নাপা', quantity: 5, date: '2025-08-02', totalPrice: 7.5, profit: 3 }
+        { id: 2, medicineName: 'নাপা', quantity: 5, date: '2025-08-02', totalPrice: 7.5, profit: 3 },
+        { id: 3, medicineName: 'অ্যাট্রোপিন', quantity: 2, date: '2025-07-15', totalPrice: 5.04, profit: 1.04 },
+        { id: 4, medicineName: 'অ্যামোক্সিসিলিন', quantity: 3, date: '2025-08-05', totalPrice: 12, profit: 3 }
       ]);
       const [selectedMedicinePrice, setSelectedMedicinePrice] = useState(null);
       const [quantity, setQuantity] = useState('');
+      const [inventorySearch, setInventorySearch] = useState('');
+      const [salesSearch, setSalesSearch] = useState('');
+      const [salesDateRange, setSalesDateRange] = useState({ start: '', end: '' });
+      const [profitSearch, setProfitSearch] = useState('');
+      const [profitDateRange, setProfitDateRange] = useState({ start: '', end: '' });
+      const [showLowStockModal, setShowLowStockModal] = useState(false);
+      const [showExpiryModal, setShowExpiryModal] = useState(false);
 
       const handleRegister = (e) => {
         e.preventDefault();
@@ -175,6 +196,36 @@
         setQuantity('');
       };
 
+      // ফিল্টারিং লজিক
+      const filteredMedicines = medicines.filter(m =>
+        m.name.toLowerCase().includes(inventorySearch.toLowerCase()) ||
+        m.generic.toLowerCase().includes(inventorySearch.toLowerCase()) ||
+        m.company.toLowerCase().includes(inventorySearch.toLowerCase()) ||
+        m.formulation.toLowerCase().includes(inventorySearch.toLowerCase())
+      );
+
+      const filteredSales = sales.filter(sale => {
+        const matchesSearch = sale.medicineName.toLowerCase().includes(salesSearch.toLowerCase());
+        const saleDate = new Date(sale.date);
+        const startDate = salesDateRange.start ? new Date(salesDateRange.start) : null;
+        const endDate = salesDateRange.end ? new Date(salesDateRange.end) : null;
+        const matchesDate =
+          (!startDate || saleDate >= startDate) &&
+          (!endDate || saleDate <= endDate);
+        return matchesSearch && matchesDate;
+      });
+
+      const filteredProfit = sales.filter(sale => {
+        const matchesSearch = sale.medicineName.toLowerCase().includes(profitSearch.toLowerCase());
+        const saleDate = new Date(sale.date);
+        const startDate = profitDateRange.start ? new Date(profitDateRange.start) : null;
+        const endDate = profitDateRange.end ? new Date(profitDateRange.end) : null;
+        const matchesDate =
+          (!startDate || saleDate >= startDate) &&
+          (!endDate || saleDate <= endDate);
+        return matchesSearch && matchesDate;
+      });
+
       // কম স্টক এবং মেয়াদোত্তীর্ণ ওষুধ চেক
       const lowStockMedicines = medicines.filter(m => m.stock <= 10);
       const getExpiryStatus = (expiryDate) => {
@@ -187,7 +238,7 @@
 
       // মাসিক এবং সাপ্তাহিক বিক্রয় ডেটা
       const getMonthlySales = () => {
-        return sales.reduce((acc, sale) => {
+        return filteredSales.reduce((acc, sale) => {
           const month = new Date(sale.date).toLocaleString('bn', { month: 'long', year: 'numeric' });
           acc[month] = (acc[month] || 0) + sale.totalPrice;
           return acc;
@@ -195,7 +246,7 @@
       };
 
       const getWeeklySales = () => {
-        return sales.reduce((acc, sale) => {
+        return filteredSales.reduce((acc, sale) => {
           const date = new Date(sale.date);
           const week = `সপ্তাহ ${Math.ceil((date.getDate() + new Date(date.getFullYear(), date.getMonth(), 1).getDay()) / 7)} ${date.getFullYear()}`;
           acc[week] = (acc[week] || 0) + sale.totalPrice;
@@ -213,10 +264,10 @@
               new Chart(ctxDaily, {
                 type: 'bar',
                 data: {
-                  labels: sales.map(sale => sale.date),
+                  labels: filteredSales.map(sale => sale.date),
                   datasets: [{
                     label: 'মোট মূল্য (টাকা)',
-                    data: sales.map(sale => sale.totalPrice),
+                    data: filteredSales.map(sale => sale.totalPrice),
                     backgroundColor: '#2563eb',
                     borderColor: '#1d4ed8',
                     borderWidth: 1
@@ -288,10 +339,61 @@
             console.error('Error initializing Chart.js:', error);
           }
         }
-      }, [currentPage, sales]);
+      }, [currentPage, filteredSales]);
 
       return (
         <div className="min-h-screen bg-gray-100 flex">
+          {/* মডাল কম্পোনেন্ট */}
+          {showLowStockModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white p-6 rounded-lg shadow-md max-w-lg w-full">
+                <h3 className="text-xl font-semibold mb-4 text-center">কম স্টকের ওষুধ</h3>
+                {lowStockMedicines.length > 0 ? (
+                  <ul className="list-disc pl-5">
+                    {lowStockMedicines.map(m => (
+                      <li key={m.id}>
+                        {m.name} ({m.generic}) - স্টক: {m.stock}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-center">কোনো কম স্টকের ওষুধ নেই।</p>
+                )}
+                <button
+                  onClick={() => setShowLowStockModal(false)}
+                  className="mt-4 w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700"
+                >
+                  বন্ধ করুন
+                </button>
+              </div>
+            </div>
+          )}
+          {showExpiryModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white p-6 rounded-lg shadow-md max-w-lg w-full">
+                <h3 className="text-xl font-semibold mb-4 text-center">মেয়াদোত্তীর্ণ/আসন্ন মেয়াদোত্তীর্ণ ওষুধ</h3>
+                {expiringMedicines.length > 0 ? (
+                  <ul className="list-disc pl-5">
+                    {expiringMedicines.map(m => (
+                      <li key={m.id}>
+                        {m.name} ({m.generic}) - মেয়াদ: {m.expiry} (
+                        {getExpiryStatus(m.expiry) === 'expired' ? 'মেয়াদোত্তীর্ণ' : 'মেয়াদ শেষ হচ্ছে'})
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-center">কোনো মেয়াদোত্তীর্ণ ওষুধ নেই।</p>
+                )}
+                <button
+                  onClick={() => setShowExpiryModal(false)}
+                  className="mt-4 w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700"
+                >
+                  বন্ধ করুন
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* সাইডবার নেভিগেশন */}
           {isLoggedIn && (
             <div className="w-64 bg-gray-800 text-white h-screen p-4 fixed">
@@ -513,14 +615,37 @@
                         <p className="text-center">ফোন: {pharmacyInfo.phone}</p>
                         <p className="text-center">ইমেইল: {pharmacyInfo.email}</p>
                       </div>
-                      <div className="mb-6">
-                        <h3 className="text-xl font-semibold mb-2 text-center">ইনভেন্টরি অ্যালার্ট</h3>
-                        <p className="text-center text-red-600">
-                          কম স্টকের ওষুধ: {lowStockMedicines.length}টি
-                        </p>
-                        <p className="text-center text-yellow-600">
-                          মেয়াদোত্তীর্ণ/আসন্ন মেয়াদোত্তীর্ণ ওষুধ: {expiringMedicines.length}টি
-                        </p>
+                      <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="p-4 bg-red-100 rounded-md text-center">
+                          <h4 className="text-lg font-semibold text-red-600">কম স্টকের ওষুধ</h4>
+                          <p className="text-red-600">{lowStockMedicines.length}টি</p>
+                          <button
+                            onClick={() => setShowLowStockModal(true)}
+                            className="mt-2 text-blue-600 hover:underline"
+                          >
+                            বিস্তারিত দেখুন
+                          </button>
+                        </div>
+                        <div className="p-4 bg-yellow-100 rounded-md text-center">
+                          <h4 className="text-lg font-semibold text-yellow-600">মেয়াদোত্তীর্ণ/আসন্ন মেয়াদোত্তীর্ণ</h4>
+                          <p className="text-yellow-600">{expiringMedicines.length}টি</p>
+                          <button
+                            onClick={() => setShowExpiryModal(true)}
+                            className="mt-2 text-blue-600 hover:underline"
+                          >
+                            বিস্তারিত দেখুন
+                          </button>
+                        </div>
+                        <div className="p-4 bg-blue-100 rounded-md text-center">
+                          <h4 className="text-lg font-semibold text-blue-600">সাম্প্রতিক বিক্রয়</h4>
+                          <p className="text-blue-600">{sales.slice(-5).length}টি</p>
+                          <button
+                            onClick={() => setCurrentPage('sales-report')}
+                            className="mt-2 text-blue-600 hover:underline"
+                          >
+                            বিস্তারিত দেখুন
+                          </button>
+                        </div>
                       </div>
                       <div className="mb-6 p-4 bg-blue-100 rounded-md">
                         <p className="text-blue-800 text-center">আপনার ৩০ দিনের ফ্রি ট্রায়াল চলছে। বাকি আছে: ২৮ দিন।</p>
@@ -537,59 +662,76 @@
                   {currentPage === 'inventory' && (
                     <>
                       <h2 className="text-2xl font-semibold mb-4 text-center">ইনভেন্টরি ম্যানেজমেন্ট</h2>
-                      <div>
+                      <div className="mb-6">
+                        <div className="flex gap-4 mb-4 p-4 bg-gray-50 rounded-md shadow-md">
+                          <input
+                            type="text"
+                            placeholder="নাম, জেনেরিক, কোম্পানি, বা ফর্মুলেশন দিয়ে সার্চ করুন"
+                            value={inventorySearch}
+                            onChange={(e) => setInventorySearch(e.target.value)}
+                            className="flex-1 p-2 border rounded-md"
+                          />
+                          <button
+                            onClick={() => setInventorySearch('')}
+                            className="bg-gray-600 text-white p-2 rounded-md hover:bg-gray-700"
+                          >
+                            রিসেট
+                          </button>
+                        </div>
                         <h3 className="text-xl font-semibold mb-2 text-center">ওষুধের তালিকা</h3>
-                        <table className="w-full border-collapse mx-auto text-sm">
-                          <thead>
-                            <tr className="bg-gray-200">
-                              <th className="border p-2">ওষুধের নাম</th>
-                              <th className="border p-2">জেনেরিক নাম</th>
-                              <th className="border p-2">কোম্পানি</th>
-                              <th className="border p-2">ফর্মুলেশন</th>
-                              <th className="border p-2">পাওয়ার</th>
-                              <th className="border p-2">স্টক</th>
-                              <th className="border p-2">ক্রয় মূল্য (টাকা)</th>
-                              <th className="border p-2">বিক্রয় মূল্য (টাকা)</th>
-                              <th className="border p-2">মেয়াদোত্তীর্ণ তারিখ</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {medicines.map(medicine => {
-                              const expiryStatus = getExpiryStatus(medicine.expiry);
-                              return (
-                                <tr
-                                  key={medicine.id}
-                                  className={`border ${
-                                    medicine.stock <= 10 ? 'bg-red-100' : expiryStatus !== 'valid' ? 'bg-yellow-100' : ''
-                                  }`}
-                                >
-                                  <td className="border p-2 text-center">{medicine.name}</td>
-                                  <td className="border p-2 text-center">{medicine.generic}</td>
-                                  <td className="border p-2 text-center">{medicine.company}</td>
-                                  <td className="border p-2 text-center">{medicine.formulation}</td>
-                                  <td className="border p-2 text-center">{medicine.power}</td>
-                                  <td className="border p-2 text-center">
-                                    {medicine.stock}
-                                    {medicine.stock <= 10 && (
-                                      <span className="ml-2 text-red-600">⚠️ কম স্টক</span>
-                                    )}
-                                  </td>
-                                  <td className="border p-2 text-center">{medicine.purchasePrice}</td>
-                                  <td className="border p-2 text-center">{medicine.salePrice}</td>
-                                  <td className="border p-2 text-center">
-                                    {medicine.expiry}
-                                    {expiryStatus === 'expired' && (
-                                      <span className="ml-2 text-red-600">⚠️ মেয়াদোত্তীর্ণ</span>
-                                    )}
-                                    {expiryStatus === 'near-expiry' && (
-                                      <span className="ml-2 text-yellow-600">⚠️ মেয়াদ শেষ হচ্ছে</span>
-                                    )}
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
+                        <div className="overflow-x-auto">
+                          <table className="w-full border-collapse mx-auto text-sm">
+                            <thead>
+                              <tr className="bg-gray-200">
+                                <th className="border p-2">ওষুধের নাম</th>
+                                <th className="border p-2">জেনেরিক নাম</th>
+                                <th className="border p-2">কোম্পানি</th>
+                                <th className="border p-2">ফর্মুলেশন</th>
+                                <th className="border p-2">পাওয়ার</th>
+                                <th className="border p-2">স্টক</th>
+                                <th className="border p-2">ক্রয় মূল্য (টাকা)</th>
+                                <th className="border p-2">বিক্রয় মূল্য (টাকা)</th>
+                                <th className="border p-2">মেয়াদোত্তীর্ণ তারিখ</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {filteredMedicines.map(medicine => {
+                                const expiryStatus = getExpiryStatus(medicine.expiry);
+                                return (
+                                  <tr
+                                    key={medicine.id}
+                                    className={`border ${
+                                      medicine.stock <= 10 ? 'bg-red-100' : expiryStatus !== 'valid' ? 'bg-yellow-100' : ''
+                                    }`}
+                                  >
+                                    <td className="border p-2 text-center">{medicine.name}</td>
+                                    <td className="border p-2 text-center">{medicine.generic}</td>
+                                    <td className="border p-2 text-center">{medicine.company}</td>
+                                    <td className="border p-2 text-center">{medicine.formulation}</td>
+                                    <td className="border p-2 text-center">{medicine.power}</td>
+                                    <td className="border p-2 text-center">
+                                      {medicine.stock}
+                                      {medicine.stock <= 10 && (
+                                        <span className="ml-2 text-red-600">⚠️ কম স্টক</span>
+                                      )}
+                                    </td>
+                                    <td className="border p-2 text-center">{medicine.purchasePrice}</td>
+                                    <td className="border p-2 text-center">{medicine.salePrice}</td>
+                                    <td className="border p-2 text-center">
+                                      {medicine.expiry}
+                                      {expiryStatus === 'expired' && (
+                                        <span className="ml-2 text-red-600">⚠️ মেয়াদোত্তীর্ণ</span>
+                                      )}
+                                      {expiryStatus === 'near-expiry' && (
+                                        <span className="ml-2 text-yellow-600">⚠️ মেয়াদ শেষ হচ্ছে</span>
+                                      )}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
                     </>
                   )}
@@ -774,27 +916,58 @@
                     <>
                       <h2 className="text-2xl font-semibold mb-4 text-center">বিক্রয় রিপোর্ট</h2>
                       <div className="mb-6">
+                        <div className="flex flex-col md:flex-row gap-4 mb-4 p-4 bg-gray-50 rounded-md shadow-md">
+                          <input
+                            type="text"
+                            placeholder="ওষুধের নাম দিয়ে সার্চ করুন"
+                            value={salesSearch}
+                            onChange={(e) => setSalesSearch(e.target.value)}
+                            className="flex-1 p-2 border rounded-md"
+                          />
+                          <input
+                            type="date"
+                            placeholder="শুরু তারিখ"
+                            value={salesDateRange.start}
+                            onChange={(e) => setSalesDateRange({ ...salesDateRange, start: e.target.value })}
+                            className="flex-1 p-2 border rounded-md"
+                          />
+                          <input
+                            type="date"
+                            placeholder="শেষ তারিখ"
+                            value={salesDateRange.end}
+                            onChange={(e) => setSalesDateRange({ ...salesDateRange, end: e.target.value })}
+                            className="flex-1 p-2 border rounded-md"
+                          />
+                          <button
+                            onClick={() => setSalesDateRange({ start: '', end: '' }) || setSalesSearch('')}
+                            className="bg-gray-600 text-white p-2 rounded-md hover:bg-gray-700"
+                          >
+                            রিসেট
+                          </button>
+                        </div>
                         <h3 className="text-xl font-semibold mb-2 text-center">বিক্রয়ের তালিকা</h3>
-                        <table className="w-full border-collapse mx-auto">
-                          <thead>
-                            <tr className="bg-gray-200">
-                              <th className="border p-2">ওষুধের নাম</th>
-                              <th className="border p-2">পরিমাণ</th>
-                              <th className="border p-2">তারিখ</th>
-                              <th className="border p-2">মোট মূল্য (টাকা)</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {sales.map(sale => (
-                              <tr key={sale.id} className="border">
-                                <td className="border p-2 text-center">{sale.medicineName}</td>
-                                <td className="border p-2 text-center">{sale.quantity}</td>
-                                <td className="border p-2 text-center">{sale.date}</td>
-                                <td className="border p-2 text-center">{sale.totalPrice}</td>
+                        <div className="overflow-x-auto">
+                          <table className="w-full border-collapse mx-auto">
+                            <thead>
+                              <tr className="bg-gray-200">
+                                <th className="border p-2">ওষুধের নাম</th>
+                                <th className="border p-2">পরিমাণ</th>
+                                <th className="border p-2">তারিখ</th>
+                                <th className="border p-2">মোট মূল্য (টাকা)</th>
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                            </thead>
+                            <tbody>
+                              {filteredSales.map(sale => (
+                                <tr key={sale.id} className="border">
+                                  <td className="border p-2 text-center">{sale.medicineName}</td>
+                                  <td className="border p-2 text-center">{sale.quantity}</td>
+                                  <td className="border p-2 text-center">{sale.date}</td>
+                                  <td className="border p-2 text-center">{sale.totalPrice}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
                       <div className="mb-6">
                         <h3 className="text-xl font-semibold mb-2 text-center">দৈনিক বিক্রয় চার্ট</h3>
@@ -815,32 +988,63 @@
                     <>
                       <h2 className="text-2xl font-semibold mb-4 text-center">লাভ/ক্ষতি রিপোর্ট</h2>
                       <div className="mb-6">
+                        <div className="flex flex-col md:flex-row gap-4 mb-4 p-4 bg-gray-50 rounded-md shadow-md">
+                          <input
+                            type="text"
+                            placeholder="ওষুধের নাম দিয়ে সার্চ করুন"
+                            value={profitSearch}
+                            onChange={(e) => setProfitSearch(e.target.value)}
+                            className="flex-1 p-2 border rounded-md"
+                          />
+                          <input
+                            type="date"
+                            placeholder="শুরু তারিখ"
+                            value={profitDateRange.start}
+                            onChange={(e) => setProfitDateRange({ ...profitDateRange, start: e.target.value })}
+                            className="flex-1 p-2 border rounded-md"
+                          />
+                          <input
+                            type="date"
+                            placeholder="শেষ তারিখ"
+                            value={profitDateRange.end}
+                            onChange={(e) => setProfitDateRange({ ...profitDateRange, end: e.target.value })}
+                            className="flex-1 p-2 border rounded-md"
+                          />
+                          <button
+                            onClick={() => setProfitDateRange({ start: '', end: '' }) || setProfitSearch('')}
+                            className="bg-gray-600 text-white p-2 rounded-md hover:bg-gray-700"
+                          >
+                            রিসেট
+                          </button>
+                        </div>
                         <h3 className="text-xl font-semibold mb-2 text-center">বিক্রয়ের লাভ/ক্ষতি</h3>
                         <p className="text-center text-green-600">
-                          মোট লাভ: {sales.reduce((sum, sale) => sum + sale.profit, 0).toFixed(2)} টাকা
+                          মোট লাভ: {filteredProfit.reduce((sum, sale) => sum + sale.profit, 0).toFixed(2)} টাকা
                         </p>
-                        <table className="w-full border-collapse mx-auto">
-                          <thead>
-                            <tr className="bg-gray-200">
-                              <th className="border p-2">ওষুধের নাম</th>
-                              <th className="border p-2">পরিমাণ</th>
-                              <th className="border p-2">তারিখ</th>
-                              <th className="border p-2">মোট মূল্য (টাকা)</th>
-                              <th className="border p-2">লাভ (টাকা)</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {sales.map(sale => (
-                              <tr key={sale.id} className="border">
-                                <td className="border p-2 text-center">{sale.medicineName}</td>
-                                <td className="border p-2 text-center">{sale.quantity}</td>
-                                <td className="border p-2 text-center">{sale.date}</td>
-                                <td className="border p-2 text-center">{sale.totalPrice}</td>
-                                <td className="border p-2 text-center">{sale.profit}</td>
+                        <div className="overflow-x-auto">
+                          <table className="w-full border-collapse mx-auto">
+                            <thead>
+                              <tr className="bg-gray-200">
+                                <th className="border p-2">ওষুধের নাম</th>
+                                <th className="border p-2">পরিমাণ</th>
+                                <th className="border p-2">তারিখ</th>
+                                <th className="border p-2">মোট মূল্য (টাকা)</th>
+                                <th className="border p-2">লাভ (টাকা)</th>
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                            </thead>
+                            <tbody>
+                              {filteredProfit.map(sale => (
+                                <tr key={sale.id} className="border">
+                                  <td className="border p-2 text-center">{sale.medicineName}</td>
+                                  <td className="border p-2 text-center">{sale.quantity}</td>
+                                  <td className="border p-2 text-center">{sale.date}</td>
+                                  <td className="border p-2 text-center">{sale.totalPrice}</td>
+                                  <td className="border p-2 text-center">{sale.profit}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
                     </>
                   )}
