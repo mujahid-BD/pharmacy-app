@@ -81,7 +81,7 @@ fieldset {
   padding: 0.35em 0.75em 0.625em;
 }
 legend {
-  box-sizing: border-box;
+  box-sizing: content-box;
   color: inherit;
   display: table;
   max-width: 100%;
@@ -141,6 +141,12 @@ template {
 .bg-gray-200 {
   background-color: #edf2f7;
 }
+.bg-gray-800 {
+  background-color: #2d3748;
+}
+.bg-blue-600 {
+  background-color: #2563eb;
+}
 .p-4 {
   padding: 1rem;
 }
@@ -171,14 +177,23 @@ template {
 .w-full {
   width: 100%;
 }
+.w-64 {
+  width: 16rem;
+}
 .max-w-md {
   max-width: 28rem;
+}
+.max-w-lg {
+  max-width: 32rem;
 }
 .max-w-4xl {
   max-width: 56rem;
 }
 .flex {
   display: flex;
+}
+.flex-1 {
+  flex: 1 1 0%;
 }
 .flex-col {
   flex-direction: column;
@@ -189,8 +204,14 @@ template {
 .justify-between {
   justify-content: space-between;
 }
+.space-y-2 > * + * {
+  margin-top: 0.5rem;
+}
 .space-y-4 > * + * {
   margin-top: 1rem;
+}
+.h-screen {
+  height: 100vh;
 }
 .text-3xl {
   font-size: 1.875rem;
@@ -206,8 +227,6 @@ template {
 }
 .text-sm {
   font-size: 0.875rem;
- 
-
   line-height: 1.25rem;
 }
 .font-bold {
@@ -229,7 +248,7 @@ template {
   color: #2563eb;
 }
 .text-blue-800 {
-  color: #1e40af Ascending
+  color: #1e40af;
 }
 .text-red-600 {
   color: #e53e3e;
@@ -264,6 +283,9 @@ template {
 .hover\:bg-red-700:hover {
   background-color: #c53030;
 }
+.hover\:bg-gray-700:hover {
+  background-color: #4a5568;
+}
 .hover\:underline:hover {
   text-decoration: underline;
 }
@@ -272,4 +294,23 @@ template {
 }
 .text-center {
   text-align: center;
+}
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+.ml-64 {
+  margin-left: 16rem;
+}
+.fixed {
+  position: fixed;
+}
+.list-disc {
+  list-style-type: disc;
+}
+.pl-5 {
+  padding-left: 1.25rem;
+}
+.text-left {
+  text-align: left;
 }
