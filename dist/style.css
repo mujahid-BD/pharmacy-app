@@ -147,6 +147,9 @@ template {
 .bg-blue-600 {
   background-color: #2563eb;
 }
+.bg-red-600 {
+  background-color: #e53e3e;
+}
 .p-4 {
   padding: 1rem;
 }
@@ -201,6 +204,9 @@ template {
 .items-center {
   align-items: center;
 }
+.justify-center {
+  justify-content: center;
+}
 .justify-between {
   justify-content: space-between;
 }
@@ -252,12 +258,6 @@ template {
 }
 .text-red-600 {
   color: #e53e3e;
-}
-.bg-blue-600 {
-  background-color: #2563eb;
-}
-.bg-red-600 {
-  background-color: #e53e3e;
 }
 .border {
   border-width: 1px;
