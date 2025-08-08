@@ -48,7 +48,7 @@
           name: 'নাপা', 
           generic: 'Paracetamol', 
           company: 'Beximco', 
-          stock: 50, 
+          stock: 5, 
           expiry: '2025-06-30', 
           purchasePrice: 0.9, 
           salePrice: 1.5, 
@@ -61,7 +61,7 @@
           generic: 'Atropine Sulfate', 
           company: 'S.N. Pharmaceutical', 
           stock: 20, 
-          expiry: '2025-09-30', 
+          expiry: '2025-08-20', 
           purchasePrice: 2.0, 
           salePrice: 2.52, 
           formulation: 'Injection', 
@@ -69,8 +69,8 @@
         }
       ]);
       const [sales, setSales] = useState([
-        { id: 1, medicineName: 'প্যারাসিটামল', quantity: 10, date: '2025-08-01', totalPrice: 12 },
-        { id: 2, medicineName: 'নাপা', quantity: 5, date: '2025-08-02', totalPrice: 7.5 }
+        { id: 1, medicineName: 'প্যারাসিটামল', quantity: 10, date: '2025-08-01', totalPrice: 12, profit: 4 },
+        { id: 2, medicineName: 'নাপা', quantity: 5, date: '2025-08-02', totalPrice: 7.5, profit: 3 }
       ]);
       const [selectedMedicinePrice, setSelectedMedicinePrice] = useState(null);
       const [quantity, setQuantity] = useState('');
@@ -130,7 +130,7 @@
         const selectedName = e.target.value;
         const medicine = medicines.find(m => m.name === selectedName);
         setSelectedMedicinePrice(medicine ? medicine.salePrice : null);
-        setQuantity(''); // Reset quantity when medicine changes
+        setQuantity('');
       };
 
       const handleQuantityChange = (e) => {
@@ -155,12 +155,14 @@
         }
 
         const totalPrice = (quantityValue * selectedMedicine.salePrice).toFixed(2);
+        const profit = ((selectedMedicine.salePrice - selectedMedicine.purchasePrice) * quantityValue).toFixed(2);
         const newSale = {
           id: sales.length + 1,
           medicineName,
           quantity: quantityValue,
           date,
-          totalPrice: parseFloat(totalPrice)
+          totalPrice: parseFloat(totalPrice),
+          profit: parseFloat(profit)
         };
         setSales([...sales, newSale]);
         setMedicines(medicines.map(medicine =>
@@ -173,13 +175,42 @@
         setQuantity('');
       };
 
-      // Chart.js initialization
+      // কম স্টক এবং মেয়াদোত্তীর্ণ ওষুধ চেক
+      const lowStockMedicines = medicines.filter(m => m.stock <= 10);
+      const getExpiryStatus = (expiryDate) => {
+        const today = new Date();
+        const expiry = new Date(expiryDate);
+        const diffDays = (expiry - today) / (1000 * 60 * 60 * 24);
+        return diffDays <= 0 ? 'expired' : diffDays <= 30 ? 'near-expiry' : 'valid';
+      };
+      const expiringMedicines = medicines.filter(m => getExpiryStatus(m.expiry) !== 'valid');
+
+      // মাসিক এবং সাপ্তাহিক বিক্রয় ডেটা
+      const getMonthlySales = () => {
+        return sales.reduce((acc, sale) => {
+          const month = new Date(sale.date).toLocaleString('bn', { month: 'long', year: 'numeric' });
+          acc[month] = (acc[month] || 0) + sale.totalPrice;
+          return acc;
+        }, {});
+      };
+
+      const getWeeklySales = () => {
+        return sales.reduce((acc, sale) => {
+          const date = new Date(sale.date);
+          const week = `সপ্তাহ ${Math.ceil((date.getDate() + new Date(date.getFullYear(), date.getMonth(), 1).getDay()) / 7)} ${date.getFullYear()}`;
+          acc[week] = (acc[week] || 0) + sale.totalPrice;
+          return acc;
+        }, {});
+      };
+
+      // চার্ট ইনিশিয়ালাইজেশন
       useEffect(() => {
         if (currentPage === 'sales-report' && window.Chart) {
           try {
-            const ctx = document.getElementById('salesChart')?.getContext('2d');
-            if (ctx) {
-              new Chart(ctx, {
+            // দৈনিক চার্ট
+            const ctxDaily = document.getElementById('salesChart')?.getContext('2d');
+            if (ctxDaily) {
+              new Chart(ctxDaily, {
                 type: 'bar',
                 data: {
                   labels: sales.map(sale => sale.date),
@@ -199,8 +230,59 @@
                   }
                 }
               });
-            } else {
-              console.error('Canvas element not found for Chart.js');
+            }
+
+            // মাসিক চার্ট
+            const ctxMonthly = document.getElementById('monthlySalesChart')?.getContext('2d');
+            if (ctxMonthly) {
+              const monthlySales = getMonthlySales();
+              new Chart(ctxMonthly, {
+                type: 'line',
+                data: {
+                  labels: Object.keys(monthlySales),
+                  datasets: [{
+                    label: 'মাসিক বিক্রয় (টাকা)',
+                    data: Object.values(monthlySales),
+                    backgroundColor: '#16a34a',
+                    borderColor: '#15803d',
+                    borderWidth: 2,
+                    fill: false
+                  }]
+                },
+                options: {
+                  scales: {
+                    y: {
+                      beginAtZero: true
+                    }
+                  }
+                }
+              });
+            }
+
+            // সাপ্তাহিক চার্ট
+            const ctxWeekly = document.getElementById('weeklySalesChart')?.getContext('2d');
+            if (ctxWeekly) {
+              const weeklySales = getWeeklySales();
+              new Chart(ctxWeekly, {
+                type: 'bar',
+                data: {
+                  labels: Object.keys(weeklySales),
+                  datasets: [{
+                    label: 'সাপ্তাহিক বিক্রয় (টাকা)',
+                    data: Object.values(weeklySales),
+                    backgroundColor: '#d97706',
+                    borderColor: '#b45309',
+                    borderWidth: 1
+                  }]
+                },
+                options: {
+                  scales: {
+                    y: {
+                      beginAtZero: true
+                    }
+                  }
+                }
+              });
             }
           } catch (error) {
             console.error('Error initializing Chart.js:', error);
@@ -244,6 +326,12 @@
                   className={`w-full text-left p-2 rounded-md ${currentPage === 'sales-report' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
                 >
                   বিক্রয় রিপোর্ট
+                </button>
+                <button
+                  onClick={() => setCurrentPage('profit-loss')}
+                  className={`w-full text-left p-2 rounded-md ${currentPage === 'profit-loss' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
+                >
+                  লাভ/ক্ষতি রিপোর্ট
                 </button>
                 <button
                   onClick={() => setCurrentPage('profile')}
@@ -425,6 +513,15 @@
                         <p className="text-center">ফোন: {pharmacyInfo.phone}</p>
                         <p className="text-center">ইমেইল: {pharmacyInfo.email}</p>
                       </div>
+                      <div className="mb-6">
+                        <h3 className="text-xl font-semibold mb-2 text-center">ইনভেন্টরি অ্যালার্ট</h3>
+                        <p className="text-center text-red-600">
+                          কম স্টকের ওষুধ: {lowStockMedicines.length}টি
+                        </p>
+                        <p className="text-center text-yellow-600">
+                          মেয়াদোত্তীর্ণ/আসন্ন মেয়াদোত্তীর্ণ ওষুধ: {expiringMedicines.length}টি
+                        </p>
+                      </div>
                       <div className="mb-6 p-4 bg-blue-100 rounded-md">
                         <p className="text-blue-800 text-center">আপনার ৩০ দিনের ফ্রি ট্রায়াল চলছে। বাকি আছে: ২৮ দিন।</p>
                         <button
@@ -457,19 +554,40 @@
                             </tr>
                           </thead>
                           <tbody>
-                            {medicines.map(medicine => (
-                              <tr key={medicine.id} className="border">
-                                <td className="border p-2 text-center">{medicine.name}</td>
-                                <td className="border p-2 text-center">{medicine.generic}</td>
-                                <td className="border p-2 text-center">{medicine.company}</td>
-                                <td className="border p-2 text-center">{medicine.formulation}</td>
-                                <td className="border p-2 text-center">{medicine.power}</td>
-                                <td className="border p-2 text-center">{medicine.stock}</td>
-                                <td className="border p-2 text-center">{medicine.purchasePrice}</td>
-                                <td className="border p-2 text-center">{medicine.salePrice}</td>
-                                <td className="border p-2 text-center">{medicine.expiry}</td>
-                              </tr>
-                            ))}
+                            {medicines.map(medicine => {
+                              const expiryStatus = getExpiryStatus(medicine.expiry);
+                              return (
+                                <tr
+                                  key={medicine.id}
+                                  className={`border ${
+                                    medicine.stock <= 10 ? 'bg-red-100' : expiryStatus !== 'valid' ? 'bg-yellow-100' : ''
+                                  }`}
+                                >
+                                  <td className="border p-2 text-center">{medicine.name}</td>
+                                  <td className="border p-2 text-center">{medicine.generic}</td>
+                                  <td className="border p-2 text-center">{medicine.company}</td>
+                                  <td className="border p-2 text-center">{medicine.formulation}</td>
+                                  <td className="border p-2 text-center">{medicine.power}</td>
+                                  <td className="border p-2 text-center">
+                                    {medicine.stock}
+                                    {medicine.stock <= 10 && (
+                                      <span className="ml-2 text-red-600">⚠️ কম স্টক</span>
+                                    )}
+                                  </td>
+                                  <td className="border p-2 text-center">{medicine.purchasePrice}</td>
+                                  <td className="border p-2 text-center">{medicine.salePrice}</td>
+                                  <td className="border p-2 text-center">
+                                    {medicine.expiry}
+                                    {expiryStatus === 'expired' && (
+                                      <span className="ml-2 text-red-600">⚠️ মেয়াদোত্তীর্ণ</span>
+                                    )}
+                                    {expiryStatus === 'near-expiry' && (
+                                      <span className="ml-2 text-yellow-600">⚠️ মেয়াদ শেষ হচ্ছে</span>
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })}
                           </tbody>
                         </table>
                       </div>
@@ -678,9 +796,51 @@
                           </tbody>
                         </table>
                       </div>
-                      <div>
+                      <div className="mb-6">
                         <h3 className="text-xl font-semibold mb-2 text-center">দৈনিক বিক্রয় চার্ট</h3>
                         <canvas id="salesChart" className="max-w-lg mx-auto"></canvas>
+                      </div>
+                      <div className="mb-6">
+                        <h3 className="text-xl font-semibold mb-2 text-center">মাসিক বিক্রয় চার্ট</h3>
+                        <canvas id="monthlySalesChart" className="max-w-lg mx-auto"></canvas>
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-semibold mb-2 text-center">সাপ্তাহিক বিক্রয় চার্ট</h3>
+                        <canvas id="weeklySalesChart" className="max-w-lg mx-auto"></canvas>
+                      </div>
+                    </>
+                  )}
+
+                  {currentPage === 'profit-loss' && (
+                    <>
+                      <h2 className="text-2xl font-semibold mb-4 text-center">লাভ/ক্ষতি রিপোর্ট</h2>
+                      <div className="mb-6">
+                        <h3 className="text-xl font-semibold mb-2 text-center">বিক্রয়ের লাভ/ক্ষতি</h3>
+                        <p className="text-center text-green-600">
+                          মোট লাভ: {sales.reduce((sum, sale) => sum + sale.profit, 0).toFixed(2)} টাকা
+                        </p>
+                        <table className="w-full border-collapse mx-auto">
+                          <thead>
+                            <tr className="bg-gray-200">
+                              <th className="border p-2">ওষুধের নাম</th>
+                              <th className="border p-2">পরিমাণ</th>
+                              <th className="border p-2">তারিখ</th>
+                              <th className="border p-2">মোট মূল্য (টাকা)</th>
+                              <th className="border p-2">লাভ (টাকা)</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {sales.map(sale => (
+                              <tr key={sale.id} className="border">
+                                <td className="border p-2 text-center">{sale.medicineName}</td>
+                                <td className="border p-2 text-center">{sale.quantity}</td>
+                                <td className="border p-2 text-center">{sale.date}</td>
+                                <td className="border p-2 text-center">{sale.totalPrice}</td>
+                                <td className="border p-2 text-center">{sale.profit}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
                     </>
                   )}
