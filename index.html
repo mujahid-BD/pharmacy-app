@@ -31,13 +31,48 @@
       const [loginCredentials, setLoginCredentials] = useState(null);
       const [loginError, setLoginError] = useState('');
       const [medicines, setMedicines] = useState([
-        { id: 1, name: 'প্যারাসিটামল', generic: 'Paracetamol', company: 'Square', stock: 100, expiry: '2025-12-31' },
-        { id: 2, name: 'নাপা', generic: 'Paracetamol', company: 'Beximco', stock: 50, expiry: '2025-06-30' }
+        { 
+          id: 1, 
+          name: 'প্যারাসিটামল', 
+          generic: 'Paracetamol', 
+          company: 'Square', 
+          stock: 100, 
+          expiry: '2025-12-31', 
+          purchasePrice: 0.8, 
+          salePrice: 1.2, 
+          formulation: 'Tablet', 
+          power: '500mg' 
+        },
+        { 
+          id: 2, 
+          name: 'নাপা', 
+          generic: 'Paracetamol', 
+          company: 'Beximco', 
+          stock: 50, 
+          expiry: '2025-06-30', 
+          purchasePrice: 0.9, 
+          salePrice: 1.5, 
+          formulation: 'Tablet', 
+          power: '500mg' 
+        },
+        { 
+          id: 3, 
+          name: 'অ্যাট্রোপিন', 
+          generic: 'Atropine Sulfate', 
+          company: 'S.N. Pharmaceutical', 
+          stock: 20, 
+          expiry: '2025-09-30', 
+          purchasePrice: 2.0, 
+          salePrice: 2.52, 
+          formulation: 'Injection', 
+          power: '0.6mg/ml' 
+        }
       ]);
       const [sales, setSales] = useState([
-        { id: 1, medicineName: 'প্যারাসিটামল', quantity: 10, date: '2025-08-01', totalPrice: 100 },
-        { id: 2, medicineName: 'নাপা', quantity: 5, date: '2025-08-02', totalPrice: 60 }
+        { id: 1, medicineName: 'প্যারাসিটামল', quantity: 10, date: '2025-08-01', totalPrice: 12 },
+        { id: 2, medicineName: 'নাপা', quantity: 5, date: '2025-08-02', totalPrice: 7.5 }
       ]);
+      const [selectedMedicinePrice, setSelectedMedicinePrice] = useState(null);
 
       const handleRegister = (e) => {
         e.preventDefault();
@@ -73,7 +108,11 @@
           generic: e.target.generic.value,
           company: e.target.company.value,
           stock: parseInt(e.target.stock.value),
-          expiry: e.target.expiry.value
+          expiry: e.target.expiry.value,
+          purchasePrice: parseFloat(e.target.purchasePrice.value),
+          salePrice: parseFloat(e.target.salePrice.value),
+          formulation: e.target.formulation.value,
+          power: e.target.power.value
         };
         setMedicines([...medicines, newMedicine]);
         e.target.reset();
@@ -88,15 +127,32 @@
 
       const handleAddSale = (e) => {
         e.preventDefault();
+        const medicineName = e.target.medicineName.value;
+        const quantity = parseInt(e.target.quantity.value);
+        const date = e.target.date.value;
+        const totalPrice = parseFloat(e.target.totalPrice.value);
         const newSale = {
           id: sales.length + 1,
-          medicineName: e.target.medicineName.value,
-          quantity: parseInt(e.target.quantity.value),
-          date: e.target.date.value,
-          totalPrice: parseFloat(e.target.totalPrice.value)
+          medicineName,
+          quantity,
+          date,
+          totalPrice
         };
         setSales([...sales, newSale]);
+        // Update stock
+        setMedicines(medicines.map(medicine => 
+          medicine.name === medicineName 
+            ? { ...medicine, stock: medicine.stock - quantity }
+            : medicine
+        ));
         e.target.reset();
+        setSelectedMedicinePrice(null);
+      };
+
+      const handleMedicineSelection = (e) => {
+        const selectedName = e.target.value;
+        const medicine = medicines.find(m => m.name === selectedName);
+        setSelectedMedicinePrice(medicine ? medicine.salePrice : null);
       };
 
       // Chart.js initialization
@@ -332,7 +388,7 @@
                 )}
               </div>
             ) : (
-              <div className="p-6 w-full max-w-4xl">
+              <div className="p-6 w-full max-w-5xl">
                 <div className="bg-white p-6 rounded-lg shadow-md">
                   {currentPage === 'dashboard' && (
                     <>
@@ -362,13 +418,17 @@
                       <h2 className="text-2xl font-semibold mb-4 text-center">ইনভেন্টরি ম্যানেজমেন্ট</h2>
                       <div>
                         <h3 className="text-xl font-semibold mb-2 text-center">ওষুধের তালিকা</h3>
-                        <table className="w-full border-collapse mx-auto">
+                        <table className="w-full border-collapse mx-auto text-sm">
                           <thead>
                             <tr className="bg-gray-200">
                               <th className="border p-2">ওষুধের নাম</th>
                               <th className="border p-2">জেনেরিক নাম</th>
                               <th className="border p-2">কোম্পানি</th>
+                              <th className="border p-2">ফর্মুলেশন</th>
+                              <th className="border p-2">পাওয়ার</th>
                               <th className="border p-2">স্টক</th>
+                              <th className="border p-2">ক্রয় মূল্য (টাকা)</th>
+                              <th className="border p-2">বিক্রয় মূল্য (টাকা)</th>
                               <th className="border p-2">মেয়াদোত্তীর্ণ তারিখ</th>
                             </tr>
                           </thead>
@@ -378,7 +438,11 @@
                                 <td className="border p-2 text-center">{medicine.name}</td>
                                 <td className="border p-2 text-center">{medicine.generic}</td>
                                 <td className="border p-2 text-center">{medicine.company}</td>
+                                <td className="border p-2 text-center">{medicine.formulation}</td>
+                                <td className="border p-2 text-center">{medicine.power}</td>
                                 <td className="border p-2 text-center">{medicine.stock}</td>
+                                <td className="border p-2 text-center">{medicine.purchasePrice}</td>
+                                <td className="border p-2 text-center">{medicine.salePrice}</td>
                                 <td className="border p-2 text-center">{medicine.expiry}</td>
                               </tr>
                             ))}
@@ -420,10 +484,58 @@
                           />
                         </div>
                         <div>
+                          <label className="block text-sm font-medium text-gray-700">ফর্মুলেশন</label>
+                          <select
+                            name="formulation"
+                            className="mt-1 block w-full p-2 border rounded-md"
+                            required
+                          >
+                            <option value="">ফর্মুলেশন নির্বাচন করুন</option>
+                            <option value="Tablet">Tablet</option>
+                            <option value="Capsule">Capsule</option>
+                            <option value="Injection">Injection</option>
+                            <option value="Drop">Drop</option>
+                            <option value="Suspension">Suspension</option>
+                            <option value="Ointment">Ointment</option>
+                            <option value="Cream">Cream</option>
+                            <option value="Sachet">Sachet</option>
+                            <option value="Suppository">Suppository</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">পাওয়ার (যেমন: 500mg, 0.6mg/ml)</label>
+                          <input
+                            type="text"
+                            name="power"
+                            className="mt-1 block w-full p-2 border rounded-md"
+                            required
+                          />
+                        </div>
+                        <div>
                           <label className="block text-sm font-medium text-gray-700">স্টক সংখ্যা</label>
                           <input
                             type="number"
                             name="stock"
+                            className="mt-1 block w-full p-2 border rounded-md"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">ক্রয় মূল্য (টাকা, প্রতি ইউনিট)</label>
+                          <input
+                            type="number"
+                            name="purchasePrice"
+                            step="0.01"
+                            className="mt-1 block w-full p-2 border rounded-md"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">বিক্রয় মূল্য (টাকা, প্রতি ইউনিট)</label>
+                          <input
+                            type="number"
+                            name="salePrice"
+                            step="0.01"
                             className="mt-1 block w-full p-2 border rounded-md"
                             required
                           />
@@ -457,6 +569,7 @@
                             <label className="block text-sm font-medium text-gray-700">ওষুধের নাম</label>
                             <select
                               name="medicineName"
+                              onChange={handleMedicineSelection}
                               className="mt-1 block w-full p-2 border rounded-md"
                               required
                             >
@@ -490,8 +603,10 @@
                               type="number"
                               name="totalPrice"
                               step="0.01"
+                              value={selectedMedicinePrice ? (selectedMedicinePrice * (parseInt(document.querySelector('input[name="quantity"]')?.value) || 0)).toFixed(2) : ''}
                               className="mt-1 block w-full p-2 border rounded-md"
                               required
+                              readOnly
                             />
                           </div>
                           <button
