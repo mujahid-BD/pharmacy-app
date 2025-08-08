@@ -73,6 +73,7 @@
         { id: 2, medicineName: 'নাপা', quantity: 5, date: '2025-08-02', totalPrice: 7.5 }
       ]);
       const [selectedMedicinePrice, setSelectedMedicinePrice] = useState(null);
+      const [quantity, setQuantity] = useState('');
 
       const handleRegister = (e) => {
         e.preventDefault();
@@ -125,39 +126,56 @@
         setCurrentPage('dashboard');
       };
 
-      const handleAddSale = (e) => {
-        e.preventDefault();
-        const medicineName = e.target.medicineName.value;
-        const quantity = parseInt(e.target.quantity.value);
-        const date = e.target.date.value;
-        const totalPrice = parseFloat(e.target.totalPrice.value);
-        const newSale = {
-          id: sales.length + 1,
-          medicineName,
-          quantity,
-          date,
-          totalPrice
-        };
-        setSales([...sales, newSale]);
-        // Update stock
-        setMedicines(medicines.map(medicine => 
-          medicine.name === medicineName 
-            ? { ...medicine, stock: medicine.stock - quantity }
-            : medicine
-        ));
-        e.target.reset();
-        setSelectedMedicinePrice(null);
-      };
-
       const handleMedicineSelection = (e) => {
         const selectedName = e.target.value;
         const medicine = medicines.find(m => m.name === selectedName);
         setSelectedMedicinePrice(medicine ? medicine.salePrice : null);
+        setQuantity(''); // Reset quantity when medicine changes
+      };
+
+      const handleQuantityChange = (e) => {
+        const value = e.target.value;
+        setQuantity(value);
+      };
+
+      const handleAddSale = (e) => {
+        e.preventDefault();
+        const medicineName = e.target.medicineName.value;
+        const quantityValue = parseInt(e.target.quantity.value);
+        const date = e.target.date.value;
+        const selectedMedicine = medicines.find(m => m.name === medicineName);
+
+        if (!selectedMedicine) {
+          alert('দয়া করে একটি ওষুধ নির্বাচন করুন।');
+          return;
+        }
+        if (quantityValue > selectedMedicine.stock) {
+          alert('পরিমাণ উপলব্ধ স্টকের চেয়ে বেশি।');
+          return;
+        }
+
+        const totalPrice = (quantityValue * selectedMedicine.salePrice).toFixed(2);
+        const newSale = {
+          id: sales.length + 1,
+          medicineName,
+          quantity: quantityValue,
+          date,
+          totalPrice: parseFloat(totalPrice)
+        };
+        setSales([...sales, newSale]);
+        setMedicines(medicines.map(medicine =>
+          medicine.name === medicineName
+            ? { ...medicine, stock: medicine.stock - quantityValue }
+            : medicine
+        ));
+        e.target.reset();
+        setSelectedMedicinePrice(null);
+        setQuantity('');
       };
 
       // Chart.js initialization
       useEffect(() => {
-        if (currentPage === 'sales' && window.Chart) {
+        if (currentPage === 'sales-report' && window.Chart) {
           try {
             const ctx = document.getElementById('salesChart')?.getContext('2d');
             if (ctx) {
@@ -216,10 +234,16 @@
                   নতুন ওষুধ যোগ করুন
                 </button>
                 <button
-                  onClick={() => setCurrentPage('sales')}
-                  className={`w-full text-left p-2 rounded-md ${currentPage === 'sales' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
+                  onClick={() => setCurrentPage('new-sale')}
+                  className={`w-full text-left p-2 rounded-md ${currentPage === 'new-sale' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
                 >
-                  সেলস রিপোর্ট
+                  নতুন বিক্রয়
+                </button>
+                <button
+                  onClick={() => setCurrentPage('sales-report')}
+                  className={`w-full text-left p-2 rounded-md ${currentPage === 'sales-report' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
+                >
+                  বিক্রয় রিপোর্ট
                 </button>
                 <button
                   onClick={() => setCurrentPage('profile')}
@@ -559,9 +583,9 @@
                     </>
                   )}
 
-                  {currentPage === 'sales' && (
+                  {currentPage === 'new-sale' && (
                     <>
-                      <h2 className="text-2xl font-semibold mb-4 text-center">সেলস রিপোর্ট</h2>
+                      <h2 className="text-2xl font-semibold mb-4 text-center">নতুন বিক্রয়</h2>
                       <div className="mb-6">
                         <h3 className="text-xl font-semibold mb-2 text-center">নতুন বিক্রয় যোগ করুন</h3>
                         <form onSubmit={handleAddSale} className="space-y-4 max-w-lg mx-auto">
@@ -580,10 +604,21 @@
                             </select>
                           </div>
                           <div>
+                            <label className="block text-sm font-medium text-gray-700">বিক্রয় মূল্য (টাকা, প্রতি ইউনিট)</label>
+                            <input
+                              type="number"
+                              value={selectedMedicinePrice || ''}
+                              className="mt-1 block w-full p-2 border rounded-md bg-gray-100"
+                              readOnly
+                            />
+                          </div>
+                          <div>
                             <label className="block text-sm font-medium text-gray-700">পরিমাণ</label>
                             <input
                               type="number"
                               name="quantity"
+                              value={quantity}
+                              onChange={handleQuantityChange}
                               className="mt-1 block w-full p-2 border rounded-md"
                               required
                             />
@@ -601,11 +636,8 @@
                             <label className="block text-sm font-medium text-gray-700">মোট মূল্য (টাকা)</label>
                             <input
                               type="number"
-                              name="totalPrice"
-                              step="0.01"
-                              value={selectedMedicinePrice ? (selectedMedicinePrice * (parseInt(document.querySelector('input[name="quantity"]')?.value) || 0)).toFixed(2) : ''}
-                              className="mt-1 block w-full p-2 border rounded-md"
-                              required
+                              value={selectedMedicinePrice && quantity ? (selectedMedicinePrice * quantity).toFixed(2) : ''}
+                              className="mt-1 block w-full p-2 border rounded-md bg-gray-100"
                               readOnly
                             />
                           </div>
@@ -617,6 +649,12 @@
                           </button>
                         </form>
                       </div>
+                    </>
+                  )}
+
+                  {currentPage === 'sales-report' && (
+                    <>
+                      <h2 className="text-2xl font-semibold mb-4 text-center">বিক্রয় রিপোর্ট</h2>
                       <div className="mb-6">
                         <h3 className="text-xl font-semibold mb-2 text-center">বিক্রয়ের তালিকা</h3>
                         <table className="w-full border-collapse mx-auto">
