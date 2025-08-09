@@ -561,36 +561,38 @@
                         <p className="text-center">ফোন: {pharmacyInfo.phone}</p>
                         <p className="text-center">ইমেইল: {pharmacyInfo.email}</p>
                       </div>
-                      <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="p-4 bg-red-100 rounded-md text-center">
-                          <h4 className="text-lg font-semibold text-red-600">কম স্টকের ওষুধ</h4>
-                          <p className="text-red-600">{medicines.filter(m => m.stock <= 10).length}টি</p>
-                          <button
-                            onClick={() => { setCurrentPage('inventory'); setInventorySearch('low stock'); }}
-                            className="mt-2 text-blue-600 hover:underline"
-                          >
-                            বিস্তারিত দেখুন
-                          </button>
-                        </div>
-                        <div className="p-4 bg-yellow-100 rounded-md text-center">
-                          <h4 className="text-lg font-semibold text-yellow-600">মেয়াদোত্তীর্ণ/আসন্ন মেয়াদোত্তীর্ণ</h4>
-                          <p className="text-yellow-600">{medicines.filter(m => getExpiryStatus(m.expiry) !== 'valid').length}টি</p>
-                          <button
-                            onClick={() => { setCurrentPage('inventory'); setInventorySearch('expired'); }}
-                            className="mt-2 text-blue-600 hover:underline"
-                          >
-                            বিস্তারিত দেখুন
-                          </button>
-                        </div>
-                        <div className="p-4 bg-blue-100 rounded-md text-center">
-                          <h4 className="text-lg font-semibold text-blue-600">সাম্প্রতিক বিক্রয়</h4>
-                          <p className="text-blue-600">{sales.slice(-5).length}টি</p>
-                          <button
-                            onClick={() => setCurrentPage('sales-report')}
-                            className="mt-2 text-blue-600 hover:underline"
-                          >
-                            বিস্তারিত দেখুন
-                          </button>
+                      <div className="mb-6 overflow-x-auto">
+                        <div className="grid grid-cols-3 gap-4">
+                          <div className="p-4 bg-red-200 border border-gray-300 rounded-md text-center min-w-[150px] hover:shadow-lg hover:scale-105 transition-transform duration-200">
+                            <h4 className="text-lg font-semibold text-red-600">কম স্টকের ওষুধ</h4>
+                            <p className="text-red-600 text-base">{medicines.filter(m => m.stock <= 10).length}টি</p>
+                            <button
+                              onClick={() => { setCurrentPage('inventory'); setInventorySearch('low stock'); }}
+                              className="mt-2 text-blue-600 hover:underline"
+                            >
+                              বিস্তারিত দেখুন
+                            </button>
+                          </div>
+                          <div className="p-4 bg-yellow-200 border border-gray-300 rounded-md text-center min-w-[150px] hover:shadow-lg hover:scale-105 transition-transform duration-200">
+                            <h4 className="text-lg font-semibold text-yellow-600">মেয়াদোত্তীর্ণ/আসন্ন মেয়াদোত্তীর্ণ</h4>
+                            <p className="text-yellow-600 text-base">{medicines.filter(m => getExpiryStatus(m.expiry) !== 'valid').length}টি</p>
+                            <button
+                              onClick={() => { setCurrentPage('inventory'); setInventorySearch('expired'); }}
+                              className="mt-2 text-blue-600 hover:underline"
+                            >
+                              বিস্তারিত দেখুন
+                            </button>
+                          </div>
+                          <div className="p-4 bg-blue-200 border border-gray-300 rounded-md text-center min-w-[150px] hover:shadow-lg hover:scale-105 transition-transform duration-200">
+                            <h4 className="text-lg font-semibold text-blue-600">সাম্প্রতিক বিক্রয়</h4>
+                            <p className="text-blue-600 text-base">{sales.slice(-5).length}টি</p>
+                            <button
+                              onClick={() => setCurrentPage('sales-report')}
+                              className="mt-2 text-blue-600 hover:underline"
+                            >
+                              বিস্তারিত দেখুন
+                            </button>
+                          </div>
                         </div>
                       </div>
                       <div className="mb-6 p-4 bg-blue-100 rounded-md">
