@@ -11,7 +11,6 @@
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone@7.22.9/babel.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
   <style>
     body {
@@ -79,6 +78,10 @@
     .dark .bg-gray-200 {
       background-color: #4b5563;
     }
+    .dropdown-menu {
+      max-height: 200px;
+      overflow-y: auto;
+    }
   </style>
 </head>
 <body>
@@ -86,1167 +89,239 @@
   <script type="text/babel">
     const { useState, useEffect } = React;
 
-    const Dashboard = ({ pharmacyInfo, medicines, sales, setCurrentPage, setInventorySearch, isLoading, toggleTheme, theme }) => {
-      const getExpiryStatus = (expiryDate) => {
-        const today = new Date();
-        const expiry = new Date(expiryDate);
-        const diffDays = (expiry - today) / (1000 * 60 * 60 * 24);
-        return diffDays <= 0 ? 'expired' : diffDays <= 30 ? 'near-expiry' : 'valid';
+    const App = () => {
+      const [currentPage, setCurrentPage] = useState('dashboard');
+      const [isLoading, setIsLoading] = useState(true);
+      const [theme, setTheme] = useState('light');
+      const [inventorySearch, setInventorySearch] = useState('');
+      const [isPremium, setIsPremium] = useState(false); // Assuming free user by default
+      const [selectedCategories, setSelectedCategories] = useState([]);
+
+      const pharmacyInfo = {
+        name: 'আল হেরা ফার্মেসি',
+        owner: 'মোঃ আলী হোসেন',
+        address: '১২৩, মেইন রোড, ঢাকা',
+        subscription: isPremium ? 'প্রিমিয়াম' : 'ফ্রি',
       };
 
-      return (
-        <div className="p-6 w-full max-w-5xl">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-            {isLoading ? (
-              <div className="flex justify-center items-center h-64">
-                <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-              </div>
-            ) : (
-              <>
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-2xl font-semibold text-center text-black dark:text-gray-200">
-                    স্বাগতম, {pharmacyInfo.owner}!
-                  </h2>
-                  <button
-                    onClick={toggleTheme}
-                    className="bg-gray-200 dark:bg-gray-700 p-2 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200"
-                    aria-label="থিম পরিবর্তন করুন"
-                  >
-                    <i className={`fas ${theme === 'light' ? 'fa-moon' : 'fa-sun'} text-lg text-black dark:text-gray-200`}></i>
-                  </button>
-                </div>
-                <div className="mb-6">
-                  <h3 className="text-xl font-semibold mb-2 text-center text-black dark:text-gray-200">
-                    ফার্মেসির তথ্য
-                  </h3>
-                  <p className="text-center text-black dark:text-gray-200">ফার্মেসির নাম: {pharmacyInfo.name}</p>
-                  <p className="text-center text-black dark:text-gray-200">লাইসেন্স নম্বর: {pharmacyInfo.license}</p>
-                  <p className="text-center text-black dark:text-gray-200">ঠিকানা: {pharmacyInfo.address}</p>
-                  <p className="text-center text-black dark:text-gray-200">ফোন: {pharmacyInfo.phone}</p>
-                  <p className="text-center text-black dark:text-gray-200">ইমেইল: {pharmacyInfo.email}</p>
-                </div>
-                <div className="mb-6">
-                  <input
-                    type="text"
-                    placeholder="ওষুধ সার্চ করুন (নাম, জেনেরিক, কোম্পানি)"
-                    onChange={(e) => setInventorySearch(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
-                        setCurrentPage('inventory');
-                      }
-                    }}
-                    className="w-full p-2 border rounded-md mb-4 text-black dark:text-gray-200 dark:bg-gray-700 dark:border-gray-600"
-                  />
-                </div>
-                <div className="mb-6 overflow-x-auto">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                    <div
-                      className="p-4 bg-red-200 dark:bg-red-800 border border-gray-300 dark:border-gray-600 rounded-md text-center min-w-[150px] hover:shadow-lg hover:scale-105 transition-transform duration-200 animate-fade-in"
-                      data-aos="fade-up"
-                      data-aos-delay="100"
-                    >
-                      <i className="fas fa-exclamation-triangle text-red-600 dark:text-red-400 text-2xl mb-2"></i>
-                      <h4 className="text-lg font-semibold text-red-600 dark:text-red-400">কম স্টকের ওষুধ</h4>
-                      <p className="text-red-600 dark:text-red-400 text-base">{medicines.filter(m => m.stock <= 10).length}টি</p>
-                      <button
-                        onClick={() => { setCurrentPage('inventory'); setInventorySearch('low stock'); }}
-                        className="mt-2 bg-blue-600 text-white rounded-full px-4 py-2 hover:bg-blue-700 hover:shadow-md transition-all duration-200"
-                      >
-                        বিস্তারিত দেখুন
-                      </button>
-                    </div>
-                    <div
-                      className="p-4 bg-yellow-200 dark:bg-yellow-800 border border-gray-300 dark:border-gray-600 rounded-md text-center min-w-[150px] hover:shadow-lg hover:scale-105 transition-transform duration-200 animate-fade-in"
-                      data-aos="fade-up"
-                      data-aos-delay="200"
-                    >
-                      <i className="fas fa-clock text-yellow-600 dark:text-yellow-400 text-2xl mb-2"></i>
-                      <h4 className="text-lg font-semibold text-yellow-600 dark:text-yellow-400">মেয়াদোত্তীর্ণ/আসন্ন মেয়াদোত্তীর্ণ</h4>
-                      <p className="text-yellow-600 dark:text-yellow-400 text-base">{medicines.filter(m => getExpiryStatus(m.expiry) !== 'valid').length}টি</p>
-                      <button
-                        onClick={() => { setCurrentPage('inventory'); setInventorySearch('expired'); }}
-                        className="mt-2 bg-blue-600 text-white rounded-full px-4 py-2 hover:bg-blue-700 hover:shadow-md transition-all duration-200"
-                      >
-                        বিস্তারিত দেখুন
-                      </button>
-                    </div>
-                    <div
-                      className="p-4 bg-blue-200 dark:bg-blue-800 border border-gray-300 dark:border-gray-600 rounded-md text-center min-w-[150px] hover:shadow-lg hover:scale-105 transition-transform duration-200 animate-fade-in"
-                      data-aos="fade-up"
-                      data-aos-delay="300"
-                    >
-                      <i className="fas fa-chart-line text-blue-600 dark:text-blue-400 text-2xl mb-2"></i>
-                      <h4 className="text-lg font-semibold text-blue-600 dark:text-blue-400">সাম্প্রতিক বিক্রয়</h4>
-                      <p className="text-blue-600 dark:text-blue-400 text-base">{sales.slice(-5).length}টি</p>
-                      <button
-                        onClick={() => setCurrentPage('sales-report')}
-                        className="mt-2 bg-blue-600 text-white rounded-full px-4 py-2 hover:bg-blue-700 hover:shadow-md transition-all duration-200"
-                      >
-                        বিস্তারিত দেখুন
-                      </button>
-                    </div>
-                    <div
-                      className="p-4 bg-green-200 dark:bg-green-800 border border-gray-300 dark:border-gray-600 rounded-md text-center min-w-[150px] hover:shadow-lg hover:scale-105 transition-transform duration-200 animate-fade-in"
-                      data-aos="fade-up"
-                      data-aos-delay="400"
-                    >
-                      <i className="fas fa-capsules text-green-600 dark:text-green-400 text-2xl mb-2"></i>
-                      <h4 className="text-lg font-semibold text-green-600 dark:text-green-400">মোট ওষুধ</h4>
-                      <p className="text-green-600 dark:text-green-400 text-base">{medicines.length}টি</p>
-                      <button
-                        onClick={() => { setCurrentPage('inventory'); setInventorySearch(''); }}
-                        className="mt-2 bg-blue-600 text-white rounded-full px-4 py-2 hover:bg-blue-700 hover:shadow-md transition-all duration-200"
-                      >
-                        বিস্তারিত দেখুন
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div className="mb-6 p-4 bg-blue-100 dark:bg-blue-900 rounded-md">
-                  <p className="text-blue-800 dark:text-blue-200 text-center">আপনার ৩০ দিনের ফ্রি ট্রায়াল চলছে। বাকি আছে: ২৮ দিন।</p>
-                  <button
-                    onClick={() => setCurrentPage('subscription')}
-                    className="mt-2 text-blue-600 dark:text-blue-400 hover:underline block mx-auto"
-                  >
-                    প্ল্যান আপগ্রেড করুন
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      );
-    };
+      const medicines = [
+        { id: 1, name: 'প্যারাসিটামল', stock: 100, expiry: '2025-12-31', price: 2, category: 'Painkiller' },
+        { id: 2, name: 'অ্যামোক্সিসিলিন', stock: 50, expiry: '2025-06-30', price: 5, category: 'Antibiotic' },
+        { id: 3, name: 'মেটফর্মিন', stock: 30, expiry: '2025-09-15', price: 3, category: 'Diabetes' },
+        { id: 4, name: 'লোসার্টান', stock: 20, expiry: '2025-03-01', price: 7, category: 'Heart' },
+        { id: 5, name: 'ওমিপ্রাজল', stock: 80, expiry: '2026-01-31', price: 4, category: 'Antacid' },
+      ];
 
-    const App = () => {
-      const [isLoggedIn, setIsLoggedIn] = useState(false);
-      const [isRegistering, setIsRegistering] = useState(false);
-      const [currentPage, setCurrentPage] = useState('dashboard');
-      const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
-      const [isLoading, setIsLoading] = useState(true);
-      const [pharmacyInfo, setPharmacyInfo] = useState({
-        name: '',
-        owner: '',
-        license: '',
-        address: '',
-        phone: '',
-        email: '',
-        password: ''
-      });
-      const [loginCredentials, setLoginCredentials] = useState(null);
-      const [loginError, setLoginError] = useState('');
-      const [medicines, setMedicines] = useState([
-        { 
-          id: 1, 
-          name: 'প্যারাসিটামল', 
-          generic: 'Paracetamol', 
-          company: 'Square', 
-          stock: 100, 
-          expiry: '2025-12-31', 
-          purchasePrice: 0.8, 
-          salePrice: 1.2, 
-          formulation: 'Tablet', 
-          power: '500mg' 
-        },
-        { 
-          id: 2, 
-          name: 'নাপা', 
-          generic: 'Paracetamol', 
-          company: 'Beximco', 
-          stock: 5, 
-          expiry: '2025-06-30', 
-          purchasePrice: 0.9, 
-          salePrice: 1.5, 
-          formulation: 'Tablet', 
-          power: '500mg' 
-        },
-        { 
-          id: 3, 
-          name: 'অ্যাট্রোপিন', 
-          generic: 'Atropine Sulfate', 
-          company: 'S.N. Pharmaceutical', 
-          stock: 20, 
-          expiry: '2025-08-20', 
-          purchasePrice: 2.0, 
-          salePrice: 2.52, 
-          formulation: 'Injection', 
-          power: '0.6mg/ml' 
-        },
-        { 
-          id: 4, 
-          name: 'অ্যামোক্সিসিলিন', 
-          generic: 'Amoxicillin', 
-          company: 'Renata', 
-          stock: 8, 
-          expiry: '2025-09-15', 
-          purchasePrice: 3.0, 
-          salePrice: 4.0, 
-          formulation: 'Capsule', 
-          power: '250mg' 
-        }
-      ]);
-      const [sales, setSales] = useState([
-        { id: 1, medicineName: 'প্যারাসিটামল', quantity: 10, date: '2025-08-01', totalPrice: 12, profit: 4 },
-        { id: 2, medicineName: 'নাপা', quantity: 5, date: '2025-08-02', totalPrice: 7.5, profit: 3 },
-        { id: 3, medicineName: 'অ্যাট্রোপিন', quantity: 2, date: '2025-07-15', totalPrice: 5.04, profit: 1.04 },
-        { id: 4, medicineName: 'অ্যামোক্সিসিলিন', quantity: 3, date: '2025-08-05', totalPrice: 12, profit: 3 }
-      ]);
-      const [selectedMedicinePrice, setSelectedMedicinePrice] = useState(null);
-      const [quantity, setQuantity] = useState('');
-      const [inventorySearch, setInventorySearch] = useState('');
-      const [salesSearch, setSalesSearch] = useState('');
-      const [salesDateRange, setSalesDateRange] = useState({ start: '', end: '' });
-      const [profitSearch, setProfitSearch] = useState('');
-      const [profitDateRange, setProfitDateRange] = useState({ start: '', end: '' });
+      const categories = ['All', 'Painkiller', 'Antibiotic', 'Diabetes', 'Heart', 'Antacid'];
 
-      useEffect(() => {
-        AOS.init();
-        setTimeout(() => setIsLoading(false), 2000);
-        document.documentElement.className = theme;
-        localStorage.setItem('theme', theme);
-      }, [theme]);
+      const sales = [
+        { id: 1, date: '2025-08-01', amount: 5000, items: 50 },
+        { id: 2, date: '2025-08-02', amount: 6000, items: 60 },
+        { id: 3, date: '2025-08-03', amount: 4500, items: 45 },
+      ];
 
       const toggleTheme = () => {
         setTheme(theme === 'light' ? 'dark' : 'light');
       };
 
-      const handleRegister = (e) => {
-        e.preventDefault();
-        setLoginCredentials({ email: pharmacyInfo.email, password: pharmacyInfo.password });
-        console.log('Registered Pharmacy Info:', pharmacyInfo);
-        setIsLoggedIn(true);
-        setIsRegistering(false);
-        setCurrentPage('dashboard');
-      };
-
-      const handleLogin = (e) => {
-        e.preventDefault();
-        const email = e.target.email.value;
-        const password = e.target.password.value;
-        if (loginCredentials && loginCredentials.email === email && loginCredentials.password === password) {
-          setIsLoggedIn(true);
-          setCurrentPage('dashboard');
-          setLoginError('');
-        } else {
-          setLoginError('ইমেইল বা পাসওয়ার্ড ভুল।');
-        }
-      };
-
-      const handleInputChange = (e) => {
-        setPharmacyInfo({ ...pharmacyInfo, [e.target.name]: e.target.value });
-      };
-
-      const handleAddMedicine = (e) => {
-        e.preventDefault();
-        const newMedicine = {
-          id: medicines.length + 1,
-          name: e.target.name.value,
-          generic: e.target.generic.value,
-          company: e.target.company.value,
-          stock: parseInt(e.target.stock.value),
-          expiry: e.target.expiry.value,
-          purchasePrice: parseFloat(e.target.purchasePrice.value),
-          salePrice: parseFloat(e.target.salePrice.value),
-          formulation: e.target.formulation.value,
-          power: e.target.power.value
-        };
-        setMedicines([...medicines, newMedicine]);
-        e.target.reset();
-        setCurrentPage('inventory');
-      };
-
-      const handleProfileUpdate = (e) => {
-        e.preventDefault();
-        console.log('Updated Pharmacy Info:', pharmacyInfo);
-        setCurrentPage('dashboard');
-      };
-
-      const handleMedicineSelection = (e) => {
-        const selectedName = e.target.value;
-        const medicine = medicines.find(m => m.name === selectedName);
-        setSelectedMedicinePrice(medicine ? medicine.salePrice : null);
-        setQuantity('');
-      };
-
-      const handleQuantityChange = (e) => {
-        const value = e.target.value;
-        setQuantity(value);
-      };
-
-      const handleAddSale = (e) => {
-        e.preventDefault();
-        const medicineName = e.target.medicineName.value;
-        const quantityValue = parseInt(e.target.quantity.value);
-        const date = e.target.date.value;
-        const selectedMedicine = medicines.find(m => m.name === medicineName);
-
-        if (!selectedMedicine) {
-          alert('দয়া করে একটি ওষুধ নির্বাচন করুন।');
-          return;
-        }
-        if (quantityValue > selectedMedicine.stock) {
-          alert('পরিমাণ উপলব্ধ স্টকের চেয়ে বেশি।');
-          return;
-        }
-
-        const totalPrice = (quantityValue * selectedMedicine.salePrice).toFixed(2);
-        const profit = ((selectedMedicine.salePrice - selectedMedicine.purchasePrice) * quantityValue).toFixed(2);
-        const newSale = {
-          id: sales.length + 1,
-          medicineName,
-          quantity: quantityValue,
-          date,
-          totalPrice: parseFloat(totalPrice),
-          profit: parseFloat(profit)
-        };
-        setSales([...sales, newSale]);
-        setMedicines(medicines.map(medicine =>
-          medicine.name === medicineName
-            ? { ...medicine, stock: medicine.stock - quantityValue }
-            : medicine
-        ));
-        e.target.reset();
-        setSelectedMedicinePrice(null);
-        setQuantity('');
-      };
-
-      const getExpiryStatus = (expiryDate) => {
-        const today = new Date();
-        const expiry = new Date(expiryDate);
-        const diffDays = (expiry - today) / (1000 * 60 * 60 * 24);
-        return diffDays <= 0 ? 'expired' : diffDays <= 30 ? 'near-expiry' : 'valid';
-      };
-
-      const filteredMedicines = medicines.filter(m => {
-        if (inventorySearch === 'low stock') {
-          return m.stock <= 10;
-        }
-        if (inventorySearch === 'expired') {
-          return getExpiryStatus(m.expiry) !== 'valid';
-        }
-        return (
-          m.name.toLowerCase().includes(inventorySearch.toLowerCase()) ||
-          m.generic.toLowerCase().includes(inventorySearch.toLowerCase()) ||
-          m.company.toLowerCase().includes(inventorySearch.toLowerCase()) ||
-          m.formulation.toLowerCase().includes(inventorySearch.toLowerCase())
-        );
-      });
-
-      const filteredSales = sales.filter(sale => {
-        const matchesSearch = sale.medicineName.toLowerCase().includes(salesSearch.toLowerCase());
-        const saleDate = new Date(sale.date);
-        const startDate = salesDateRange.start ? new Date(salesDateRange.start) : null;
-        const endDate = salesDateRange.end ? new Date(salesDateRange.end) : null;
-        const matchesDate =
-          (!startDate || saleDate >= startDate) &&
-          (!endDate || saleDate <= endDate);
-        return matchesSearch && matchesDate;
-      });
-
-      const filteredProfit = sales.filter(sale => {
-        const matchesSearch = sale.medicineName.toLowerCase().includes(profitSearch.toLowerCase());
-        const saleDate = new Date(sale.date);
-        const startDate = profitDateRange.start ? new Date(profitDateRange.start) : null;
-        const endDate = profitDateRange.end ? new Date(profitDateRange.end) : null;
-        const matchesDate =
-          (!startDate || saleDate >= startDate) &&
-          (!endDate || saleDate <= endDate);
-        return matchesSearch && matchesDate;
-      });
-
-      const getMonthlySales = () => {
-        return filteredSales.reduce((acc, sale) => {
-          const month = new Date(sale.date).toLocaleString('bn', { month: 'long', year: 'numeric' });
-          acc[month] = (acc[month] || 0) + sale.totalPrice;
-          return acc;
-        }, {});
-      };
-
-      const getWeeklySales = () => {
-        return filteredSales.reduce((acc, sale) => {
-          const date = new Date(sale.date);
-          const week = `সপ্তাহ ${Math.ceil((date.getDate() + new Date(date.getFullYear(), date.getMonth(), 1).getDay()) / 7)} ${date.getFullYear()}`;
-          acc[week] = (acc[week] || 0) + sale.totalPrice;
-          return acc;
-        }, {});
-      };
-
       useEffect(() => {
-        if (currentPage === 'sales-report' && window.Chart) {
-          try {
-            const ctxDaily = document.getElementById('salesChart')?.getContext('2d');
-            if (ctxDaily) {
-              new Chart(ctxDaily, {
-                type: 'bar',
-                data: {
-                  labels: filteredSales.map(sale => sale.date),
-                  datasets: [{
-                    label: 'মোট মূল্য (টাকা)',
-                    data: filteredSales.map(sale => sale.totalPrice),
-                    backgroundColor: '#2563eb',
-                    borderColor: '#1d4ed8',
-                    borderWidth: 1
-                  }]
-                },
-                options: {
-                  scales: {
-                    y: {
-                      beginAtZero: true
-                    }
-                  }
-                }
-              });
-            }
+        document.documentElement.className = theme;
+        setTimeout(() => setIsLoading(false), 1000);
+        AOS.init();
+      }, [theme]);
 
-            const ctxMonthly = document.getElementById('monthlySalesChart')?.getContext('2d');
-            if (ctxMonthly) {
-              const monthlySales = getMonthlySales();
-              new Chart(ctxMonthly, {
-                type: 'line',
-                data: {
-                  labels: Object.keys(monthlySales),
-                  datasets: [{
-                    label: 'মাসিক বিক্রয় (টাকা)',
-                    data: Object.values(monthlySales),
-                    backgroundColor: '#16a34a',
-                    borderColor: '#15803d',
-                    borderWidth: 2,
-                    fill: false
-                  }]
-                },
-                options: {
-                  scales: {
-                    y: {
-                      beginAtZero: true
-                    }
-                  }
-                }
-              });
-            }
+      const Dashboard = () => {
+        const totalStock = medicines.reduce((sum, med) => sum + med.stock, 0);
+        const totalSales = sales.reduce((sum, sale) => sum + sale.amount, 0);
+        const nearExpiry = medicines.filter(med => {
+          const expiry = new Date(med.expiry);
+          const today = new Date();
+          const diffDays = (expiry - today) / (1000 * 60 * 60 * 24);
+          return diffDays <= 30 && diffDays >= 0;
+        }).length;
+        const outOfStock = medicines.filter(med => med.stock === 0).length;
 
-            const ctxWeekly = document.getElementById('weeklySalesChart')?.getContext('2d');
-            if (ctxWeekly) {
-              const weeklySales = getWeeklySales();
-              new Chart(ctxWeekly, {
-                type: 'bar',
-                data: {
-                  labels: Object.keys(weeklySales),
-                  datasets: [{
-                    label: 'সাপ্তাহিক বিক্রয় (টাকা)',
-                    data: Object.values(weeklySales),
-                    backgroundColor: '#d97706',
-                    borderColor: '#b45309',
-                    borderWidth: 1
-                  }]
-                },
-                options: {
-                  scales: {
-                    y: {
-                      beginAtZero: true
-                    }
-                  }
-                }
-              });
-            }
-          } catch (error) {
-            console.error('Error initializing Chart.js:', error);
-          }
-        }
-      }, [currentPage, filteredSales]);
+        return (
+          <div className="p-6 w-full max-w-5xl">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+              {isLoading ? (
+                <div className="flex justify-center items-center h-64">
+                  <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div className="bg-red-200 dark:bg-red-600 p-4 rounded-lg animate-fade-in" data-aos="fade-up">
+                      <h3 className="text-lg font-semibold text-red-600 dark:text-red-400"><i className="fas fa-capsules mr-2"></i>মোট স্টক</h3>
+                      <p className="text-2xl font-bold text-black dark:text-white">{totalStock} ইউনিট</p>
+                    </div>
+                    <div className="bg-yellow-200 dark:bg-yellow-600 p-4 rounded-lg animate-fade-in" data-aos="fade-up" data-aos-delay="100">
+                      <h3 className="text-lg font-semibold text-yellow-600 dark:text-yellow-400"><i className="fas fa-exclamation-triangle mr-2"></i>মেয়াদ শেষ হচ্ছে</h3>
+                      <p className="text-2xl font-bold text-black dark:text-white">{nearExpiry} টি</p>
+                    </div>
+                    <div className="bg-blue-200 dark:bg-blue-600 p-4 rounded-lg animate-fade-in" data-aos="fade-up" data-aos-delay="200">
+                      <h3 className="text-lg font-semibold text-blue-600 dark:text-blue-400"><i className="fas fa-dollar-sign mr-2"></i>মোট বিক্রয়</h3>
+                      <p className="text-2xl font-bold text-black dark:text-white">{totalSales} টাকা</p>
+                    </div>
+                    <div className="bg-green-200 dark:bg-green-600 p-4 rounded-lg animate-fade-in" data-aos="fade-up" data-aos-delay="300">
+                      <h3 className="text-lg font-semibold text-green-600 dark:text-green-400"><i className="fas fa-times-circle mr-2"></i>স্টক শেষ</h3>
+                      <p className="text-2xl font-bold text-black dark:text-white">{outOfStock} টি</p>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        );
+      };
+
+      const Inventory = () => {
+        const filteredMedicines = medicines.filter(med => 
+          (inventorySearch.toLowerCase() === '' || med.name.toLowerCase().includes(inventorySearch.toLowerCase())) &&
+          (selectedCategories.length === 0 || selectedCategories.includes('All') || selectedCategories.includes(med.category))
+        );
+
+        return (
+          <div className="p-6 w-full max-w-5xl">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+              <div className="mb-4">
+                <input
+                  type="text"
+                  placeholder="ওষুধের নাম দিয়ে সার্চ করুন..."
+                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md text-black dark:text-white dark:bg-gray-700"
+                  value={inventorySearch}
+                  onChange={(e) => setInventorySearch(e.target.value)}
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">ক্যাটাগরি ফিল্টার</label>
+                {isPremium ? (
+                  <div className="relative">
+                    <select
+                      multiple
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md text-black dark:text-white dark:bg-gray-700 dropdown-menu"
+                      value={selectedCategories}
+                      onChange={(e) => setSelectedCategories(Array.from(e.target.selectedOptions, option => option.value))}
+                    >
+                      {categories.map(category => (
+                        <option key={category} value={category}>{category === 'All' ? 'সব' : category}</option>
+                      ))}
+                    </select>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">প্রিমিয়াম: একাধিক ক্যাটাগরি সিলেক্ট করুন</p>
+                  </div>
+                ) : (
+                  <select
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md text-black dark:text-white dark:bg-gray-700"
+                    value={selectedCategories[0] || 'All'}
+                    onChange={(e) => setSelectedCategories([e.target.value])}
+                  >
+                    {categories.map(category => (
+                      <option key={category} value={category}>{category === 'All' ? 'সব' : category}</option>
+                    ))}
+                  </select>
+                )}
+                <button
+                  className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                  onClick={() => setSelectedCategories([])}
+                >
+                  ফিল্টার রিসেট
+                </button>
+              </div>
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-gray-200 dark:bg-gray-700">
+                    <th className="p-2 border border-gray-300 dark:border-gray-600 text-left">নাম</th>
+                    <th className="p-2 border border-gray-300 dark:border-gray-600 text-left">ক্যাটাগরি</th>
+                    <th className="p-2 border border-gray-300 dark:border-gray-600 text-left">স্টক</th>
+                    <th className="p-2 border border-gray-300 dark:border-gray-600 text-left">মেয়াদ</th>
+                    <th className="p-2 border border-gray-300 dark:border-gray-600 text-left">মূল্য</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredMedicines.map(med => (
+                    <tr key={med.id} className="border-b border-gray-300 dark:border-gray-600">
+                      <td className="p-2 text-black dark:text-white">{med.name}</td>
+                      <td className="p-2 text-black dark:text-white">{med.category}</td>
+                      <td className="p-2 text-black dark:text-white">{med.stock}</td>
+                      <td className="p-2 text-black dark:text-white">{med.expiry}</td>
+                      <td className="p-2 text-black dark:text-white">{med.price} টাকা</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      };
+
+      const Profile = () => (
+        <div className="p-6 w-full max-w-5xl">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">প্রোফাইল</h2>
+            <p className="text-gray-700 dark:text-gray-300"><strong>নাম:</strong> {pharmacyInfo.name}</p>
+            <p className="text-gray-700 dark:text-gray-300"><strong>মালিক:</strong> {pharmacyInfo.owner}</p>
+            <p className="text-gray-700 dark:text-gray-300"><strong>ঠিকানা:</strong> {pharmacyInfo.address}</p>
+            <p className="text-gray-700 dark:text-gray-300"><strong>সাবস্ক্রিপশন:</strong> {pharmacyInfo.subscription}</p>
+            {isPremium ? (
+              <button className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600">
+                সাবস্ক্রিপশন ম্যানেজ করুন
+              </button>
+            ) : (
+              <button className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600">
+                প্রিমিয়ামে আপগ্রেড করুন
+              </button>
+            )}
+          </div>
+        </div>
+      );
 
       return (
-        <div className={`min-h-screen bg-gray-100 dark:bg-gray-900 flex ${theme}`}>
-          {isLoggedIn && (
-            <div className="w-64 bg-gray-800 dark:bg-gray-900 text-white h-screen p-4 fixed">
-              <h2 className="text-xl font-bold mb-6">ফার্মেসি অ্যাপ</h2>
-              <nav className="space-y-2">
+        <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+          <nav className="bg-white dark:bg-gray-800 shadow-md p-4">
+            <div className="max-w-5xl mx-auto flex justify-between items-center">
+              <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">ফার্মেসি ম্যানেজমেন্ট</h1>
+              <div className="flex space-x-4">
                 <button
+                  className={`text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 ${currentPage === 'dashboard' ? 'font-bold' : ''}`}
                   onClick={() => setCurrentPage('dashboard')}
-                  className={`w-full text-left p-2 rounded-md ${currentPage === 'dashboard' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
                 >
-                  হোম
+                  ড্যাশবোর্ড
                 </button>
                 <button
-                  onClick={() => { setCurrentPage('inventory'); setInventorySearch(''); }}
-                  className={`w-full text-left p-2 rounded-md ${currentPage === 'inventory' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
+                  className={`text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 ${currentPage === 'inventory' ? 'font-bold' : ''}`}
+                  onClick={() => setCurrentPage('inventory')}
                 >
-                  ইনভেন্টরি ম্যানেজমেন্ট
+                  ইনভেন্টরি
                 </button>
                 <button
-                  onClick={() => setCurrentPage('add-medicine')}
-                  className={`w-full text-left p-2 rounded-md ${currentPage === 'add-medicine' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
-                >
-                  নতুন ওষুধ যোগ করুন
-                </button>
-                <button
-                  onClick={() => setCurrentPage('new-sale')}
-                  className={`w-full text-left p-2 rounded-md ${currentPage === 'new-sale' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
-                >
-                  নতুন বিক্রয়
-                </button>
-                <button
-                  onClick={() => setCurrentPage('sales-report')}
-                  className={`w-full text-left p-2 rounded-md ${currentPage === 'sales-report' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
-                >
-                  বিক্রয় রিপোর্ট
-                </button>
-                <button
-                  onClick={() => setCurrentPage('profit-loss')}
-                  className={`w-full text-left p-2 rounded-md ${currentPage === 'profit-loss' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
-                >
-                  লাভ/ক্ষতি রিপোর্ট
-                </button>
-                <button
+                  className={`text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 ${currentPage === 'profile' ? 'font-bold' : ''}`}
                   onClick={() => setCurrentPage('profile')}
-                  className={`w-full text-left p-2 rounded-md ${currentPage === 'profile' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
                 >
                   প্রোফাইল
                 </button>
                 <button
-                  onClick={() => setCurrentPage('subscription')}
-                  className={`w-full text-left p-2 rounded-md ${currentPage === 'subscription' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
+                  className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+                  onClick={toggleTheme}
                 >
-                  সাবস্ক্রিপশন
+                  <i className={`fas ${theme === 'light' ? 'fa-moon' : 'fa-sun'}`}></i>
                 </button>
-                <button
-                  onClick={() => setIsLoggedIn(false)}
-                  className="w-full text-left p-2 rounded-md hover:bg-red-700 dark:hover:bg-red-800"
-                >
-                  লগআউট
-                </button>
-              </nav>
+              </div>
             </div>
+          </nav>
+          {currentPage === 'dashboard' && (
+            <Dashboard
+              pharmacyInfo={pharmacyInfo}
+              medicines={medicines}
+              sales={sales}
+              setCurrentPage={setCurrentPage}
+              setInventorySearch={setInventorySearch}
+              isLoading={isLoading}
+              toggleTheme={toggleTheme}
+              theme={theme}
+            />
           )}
-
-          <div className={`flex-1 ${isLoggedIn ? 'ml-64' : ''} flex justify-center items-center`}>
-            {!isLoggedIn ? (
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md w-full max-w-md">
-                {isRegistering ? (
-                  <>
-                    <h2 className="text-2xl font-semibold mb-4 text-center text-black dark:text-gray-200">ফার্মেসি রেজিস্ট্রেশন</h2>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">ফার্মেসির নাম</label>
-                        <input
-                          type="text"
-                          name="name"
-                          value={pharmacyInfo.name}
-                          onChange={handleInputChange}
-                          className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">মালিকের নাম</label>
-                        <input
-                          type="text"
-                          name="owner"
-                          value={pharmacyInfo.owner}
-                          onChange={handleInputChange}
-                          className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">লাইসেন্স নম্বর</label>
-                        <input
-                          type="text"
-                          name="license"
-                          value={pharmacyInfo.license}
-                          onChange={handleInputChange}
-                          className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">ঠিকানা</label>
-                        <input
-                          type="text"
-                          name="address"
-                          value={pharmacyInfo.address}
-                          onChange={handleInputChange}
-                          className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">ফোন নম্বর</label>
-                        <input
-                          type="tel"
-                          name="phone"
-                          value={pharmacyInfo.phone}
-                          onChange={handleInputChange}
-                          className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">ইমেইল</label>
-                        <input
-                          type="email"
-                          name="email"
-                          value={pharmacyInfo.email}
-                          onChange={handleInputChange}
-                          className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">পাসওয়ার্ড</label>
-                        <input
-                          type="password"
-                          name="password"
-                          value={pharmacyInfo.password}
-                          onChange={handleInputChange}
-                          className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                          required
-                        />
-                      </div>
-                      <button
-                        onClick={handleRegister}
-                        className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 dark:hover:bg-blue-800"
-                      >
-                        রেজিস্টার করুন
-                      </button>
-                    </div>
-                    <p className="mt-4 text-center text-black dark:text-gray-200">
-                      ইতিমধ্যে একাউন্ট আছে?{' '}
-                      <button
-                        onClick={() => setIsRegistering(false)}
-                        className="text-blue-600 dark:text-blue-400 hover:underline"
-                      >
-                        লগইন করুন
-                      </button>
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <h2 className="text-2xl font-semibold mb-4 text-center text-black dark:text-gray-200">লগইন</h2>
-                    {loginError && <p className="text-red-600 dark:text-red-400 text-center mb-4">{loginError}</p>}
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">ইমেইল</label>
-                        <input
-                          type="email"
-                          name="email"
-                          className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">পাসওয়ার্ড</label>
-                        <input
-                          type="password"
-                          name="password"
-                          className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                          required
-                        />
-                      </div>
-                      <button
-                        onClick={handleLogin}
-                        className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 dark:hover:bg-blue-800"
-                      >
-                        লগইন
-                      </button>
-                    </div>
-                    <p className="mt-4 text-center text-black dark:text-gray-200">
-                      নতুন ব্যবহারকারী?{' '}
-                      <button
-                        onClick={() => setIsRegistering(true)}
-                        className="text-blue-600 dark:text-blue-400 hover:underline"
-                      >
-                        রেজিস্টার করুন
-                      </button>
-                    </p>
-                  </>
-                )}
-              </div>
-            ) : (
-              <div className="p-6 w-full max-w-5xl">
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-                  {currentPage === 'dashboard' && (
-                    <Dashboard
-                      pharmacyInfo={pharmacyInfo}
-                      medicines={medicines}
-                      sales={sales}
-                      setCurrentPage={setCurrentPage}
-                      setInventorySearch={setInventorySearch}
-                      isLoading={isLoading}
-                      toggleTheme={toggleTheme}
-                      theme={theme}
-                    />
-                  )}
-
-                  {currentPage === 'inventory' && (
-                    <>
-                      <h2 className="text-2xl font-semibold mb-4 text-center text-black dark:text-gray-200">ইনভেন্টরি ম্যানেজমেন্ট</h2>
-                      <div className="mb-6">
-                        <div className="flex flex-col md:flex-row gap-4 mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-md shadow-md">
-                          <input
-                            type="text"
-                            placeholder="নাম, জেনেরিক, কোম্পানি, ফর্মুলেশন, বা 'low stock', 'expired' দিয়ে সার্চ করুন"
-                            value={inventorySearch}
-                            onChange={(e) => setInventorySearch(e.target.value)}
-                            className="flex-1 p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
-                          />
-                          <button
-                            onClick={() => setInventorySearch('')}
-                            className="bg-gray-600 text-white p-2 rounded-md hover:bg-gray-700 dark:hover:bg-gray-800"
-                          >
-                            রিসেট
-                          </button>
-                        </div>
-                        <h3 className="text-xl font-semibold mb-2 text-center text-black dark:text-gray-200">ওষুধের তালিকা</h3>
-                        <div className="overflow-x-auto">
-                          <table className="w-full border-collapse mx-auto text-sm">
-                            <thead>
-                              <tr className="bg-gray-200 dark:bg-gray-700">
-                                <th className="border p-2 text-black dark:text-gray-200">ওষুধের নাম</th>
-                                <th className="border p-2 text-black dark:text-gray-200">জেনেরিক নাম</th>
-                                <th className="border p-2 text-black dark:text-gray-200">কোম্পানি</th>
-                                <th className="border p-2 text-black dark:text-gray-200">ফর্মুলেশন</th>
-                                <th className="border p-2 text-black dark:text-gray-200">পাওয়ার</th>
-                                <th className="border p-2 text-black dark:text-gray-200">স্টক</th>
-                                <th className="border p-2 text-black dark:text-gray-200">ক্রয় মূল্য (টাকা)</th>
-                                <th className="border p-2 text-black dark:text-gray-200">বিক্রয় মূল্য (টাকা)</th>
-                                <th className="border p-2 text-black dark:text-gray-200">মেয়াদোত্তীর্ণ তারিখ</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {filteredMedicines.map(medicine => {
-                                const expiryStatus = getExpiryStatus(medicine.expiry);
-                                return (
-                                  <tr
-                                    key={medicine.id}
-                                    className={`border ${
-                                      medicine.stock <= 10 ? 'bg-red-100 dark:bg-red-900' : expiryStatus !== 'valid' ? 'bg-yellow-100 dark:bg-yellow-900' : ''
-                                    }`}
-                                  >
-                                    <td className="border p-2 text-center text-black dark:text-gray-200">{medicine.name}</td>
-                                    <td className="border p-2 text-center text-black dark:text-gray-200">{medicine.generic}</td>
-                                    <td className="border p-2 text-center text-black dark:text-gray-200">{medicine.company}</td>
-                                    <td className="border p-2 text-center text-black dark:text-gray-200">{medicine.formulation}</td>
-                                    <td className="border p-2 text-center text-black dark:text-gray-200">{medicine.power}</td>
-                                    <td className="border p-2 text-center text-black dark:text-gray-200">
-                                      {medicine.stock}
-                                      {medicine.stock <= 10 && (
-                                        <span className="ml-2 text-red-600 dark:text-red-400">⚠️ কম স্টক</span>
-                                      )}
-                                    </td>
-                                    <td className="border p-2 text-center text-black dark:text-gray-200">{medicine.purchasePrice}</td>
-                                    <td className="border p-2 text-center text-black dark:text-gray-200">{medicine.salePrice}</td>
-                                    <td className="border p-2 text-center text-black dark:text-gray-200">
-                                      {medicine.expiry}
-                                      {expiryStatus === 'expired' && (
-                                        <span className="ml-2 text-red-600 dark:text-red-400">⚠️ মেয়াদোত্তীর্ণ</span>
-                                      )}
-                                      {expiryStatus === 'near-expiry' && (
-                                        <span className="ml-2 text-yellow-600 dark:text-yellow-400">⚠️ মেয়াদ শেষ হচ্ছে</span>
-                                      )}
-                                    </td>
-                                  </tr>
-                                );
-                              })}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    </>
-                  )}
-
-                  {currentPage === 'add-medicine' && (
-                    <>
-                      <h2 className="text-2xl font-semibold mb-4 text-center text-black dark:text-gray-200">নতুন ওষুধ যোগ করুন</h2>
-                      <div className="space-y-4 max-w-lg mx-auto">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">ওষুধের নাম</label>
-                          <input
-                            type="text"
-                            name="name"
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">জেনেরিক নাম</label>
-                          <input
-                            type="text"
-                            name="generic"
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">কোম্পানির নাম</label>
-                          <input
-                            type="text"
-                            name="company"
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">ফর্মুলেশন</label>
-                          <input
-                            type="text"
-                            name="formulation"
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">পাওয়ার</label>
-                          <input
-                            type="text"
-                            name="power"
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">স্টক</label>
-                          <input
-                            type="number"
-                            name="stock"
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">মেয়াদোত্তীর্ণ তারিখ</label>
-                          <input
-                            type="date"
-                            name="expiry"
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">ক্রয় মূল্য (টাকা)</label>
-                          <input
-                            type="number"
-                            name="purchasePrice"
-                            step="0.01"
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">বিক্রয় মূল্য (টাকা)</label>
-                          <input
-                            type="number"
-                            name="salePrice"
-                            step="0.01"
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                            required
-                          />
-                        </div>
-                        <button
-                          onClick={handleAddMedicine}
-                          className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 dark:hover:bg-blue-800"
-                        >
-                          ওষুধ যোগ করুন
-                        </button>
-                      </div>
-                    </>
-                  )}
-
-                  {currentPage === 'new-sale' && (
-                    <>
-                      <h2 className="text-2xl font-semibold mb-4 text-center text-black dark:text-gray-200">নতুন বিক্রয়</h2>
-                      <div className="space-y-4 max-w-lg mx-auto">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">ওষুধের নাম</label>
-                          <select
-                            name="medicineName"
-                            onChange={handleMedicineSelection}
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                            required
-                          >
-                            <option value="">ওষুধ নির্বাচন করুন</option>
-                            {medicines.map(medicine => (
-                              <option key={medicine.id} value={medicine.name}>{medicine.name}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">পরিমাণ</label>
-                          <input
-                            type="number"
-                            name="quantity"
-                            value={quantity}
-                            onChange={handleQuantityChange}
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">মোট মূল্য (টাকা)</label>
-                          <input
-                            type="text"
-                            value={selectedMedicinePrice && quantity ? (selectedMedicinePrice * quantity).toFixed(2) : '0.00'}
-                            readOnly
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">তারিখ</label>
-                          <input
-                            type="date"
-                            name="date"
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                            required
-                          />
-                        </div>
-                        <button
-                          onClick={handleAddSale}
-                          className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 dark:hover:bg-blue-800"
-                        >
-                          বিক্রয় যোগ করুন
-                        </button>
-                      </div>
-                    </>
-                  )}
-
-                  {currentPage === 'sales-report' && (
-                    <>
-                      <h2 className="text-2xl font-semibold mb-4 text-center text-black dark:text-gray-200">বিক্রয় রিপোর্ট</h2>
-                      <div className="mb-6">
-                        <div className="flex flex-col md:flex-row gap-4 mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-md shadow-md">
-                          <input
-                            type="text"
-                            placeholder="ওষুধের নাম দিয়ে সার্চ করুন"
-                            value={salesSearch}
-                            onChange={(e) => setSalesSearch(e.target.value)}
-                            className="flex-1 p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
-                          />
-                          <input
-                            type="date"
-                            value={salesDateRange.start}
-                            onChange={(e) => setSalesDateRange({ ...salesDateRange, start: e.target.value })}
-                            className="p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
-                          />
-                          <input
-                            type="date"
-                            value={salesDateRange.end}
-                            onChange={(e) => setSalesDateRange({ ...salesDateRange, end: e.target.value })}
-                            className="p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
-                          />
-                          <button
-                            onClick={() => { setSalesSearch(''); setSalesDateRange({ start: '', end: '' }); }}
-                            className="bg-gray-600 text-white p-2 rounded-md hover:bg-gray-700 dark:hover:bg-gray-800"
-                          >
-                            রিসেট
-                          </button>
-                        </div>
-                        <div className="overflow-x-auto">
-                          <table className="w-full border-collapse mx-auto text-sm">
-                            <thead>
-                              <tr className="bg-gray-200 dark:bg-gray-700">
-                                <th className="border p-2 text-black dark:text-gray-200">ওষুধের নাম</th>
-                                <th className="border p-2 text-black dark:text-gray-200">পরিমাণ</th>
-                                <th className="border p-2 text-black dark:text-gray-200">তারিখ</th>
-                                <th className="border p-2 text-black dark:text-gray-200">মোট মূল্য (টাকা)</th>
-                                <th className="border p-2 text-black dark:text-gray-200">লাভ (টাকা)</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {filteredSales.map(sale => (
-                                <tr key={sale.id} className="border">
-                                  <td className="border p-2 text-center text-black dark:text-gray-200">{sale.medicineName}</td>
-                                  <td className="border p-2 text-center text-black dark:text-gray-200">{sale.quantity}</td>
-                                  <td className="border p-2 text-center text-black dark:text-gray-200">{sale.date}</td>
-                                  <td className="border p-2 text-center text-black dark:text-gray-200">{sale.totalPrice}</td>
-                                  <td className="border p-2 text-center text-black dark:text-gray-200">{sale.profit}</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                        <div className="mt-6">
-                          <h3 className="text-xl font-semibold mb-2 text-center text-black dark:text-gray-200">দৈনিক বিক্রয় চার্ট</h3>
-                          <canvas id="salesChart"></canvas>
-                        </div>
-                        <div className="mt-6">
-                          <h3 className="text-xl font-semibold mb-2 text-center text-black dark:text-gray-200">মাসিক বিক্রয় চার্ট</h3>
-                          <canvas id="monthlySalesChart"></canvas>
-                        </div>
-                        <div className="mt-6">
-                          <h3 className="text-xl font-semibold mb-2 text-center text-black dark:text-gray-200">সাপ্তাহিক বিক্রয় চার্ট</h3>
-                          <canvas id="weeklySalesChart"></canvas>
-                        </div>
-                      </div>
-                    </>
-                  )}
-
-                  {currentPage === 'profit-loss' && (
-                    <>
-                      <h2 className="text-2xl font-semibold mb-4 text-center text-black dark:text-gray-200">লাভ/ক্ষতি রিপোর্ট</h2>
-                      <div className="mb-6">
-                        <div className="flex flex-col md:flex-row gap-4 mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-md shadow-md">
-                          <input
-                            type="text"
-                            placeholder="ওষুধের নাম দিয়ে সার্চ করুন"
-                            value={profitSearch}
-                            onChange={(e) => setProfitSearch(e.target.value)}
-                            className="flex-1 p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
-                          />
-                          <input
-                            type="date"
-                            value={profitDateRange.start}
-                            onChange={(e) => setProfitDateRange({ ...profitDateRange, start: e.target.value })}
-                            className="p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
-                          />
-                          <input
-                            type="date"
-                            value={profitDateRange.end}
-                            onChange={(e) => setProfitDateRange({ ...profitDateRange, end: e.target.value })}
-                            className="p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
-                          />
-                          <button
-                            onClick={() => { setProfitSearch(''); setProfitDateRange({ start: '', end: '' }); }}
-                            className="bg-gray-600 text-white p-2 rounded-md hover:bg-gray-700 dark:hover:bg-gray-800"
-                          >
-                            রিসেট
-                          </button>
-                        </div>
-                        <div className="overflow-x-auto">
-                          <table className="w-full border-collapse mx-auto text-sm">
-                            <thead>
-                              <tr className="bg-gray-200 dark:bg-gray-700">
-                                <th className="border p-2 text-black dark:text-gray-200">ওষুধের নাম</th>
-                                <th className="border p-2 text-black dark:text-gray-200">পরিমাণ</th>
-                                <th className="border p-2 text-black dark:text-gray-200">তারিখ</th>
-                                <th className="border p-2 text-black dark:text-gray-200">মোট মূল্য (টাকা)</th>
-                                <th className="border p-2 text-black dark:text-gray-200">লাভ (টাকা)</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {filteredProfit.map(sale => (
-                                <tr key={sale.id} className="border">
-                                  <td className="border p-2 text-center text-black dark:text-gray-200">{sale.medicineName}</td>
-                                  <td className="border p-2 text-center text-black dark:text-gray-200">{sale.quantity}</td>
-                                  <td className="border p-2 text-center text-black dark:text-gray-200">{sale.date}</td>
-                                  <td className="border p-2 text-center text-black dark:text-gray-200">{sale.totalPrice}</td>
-                                  <td className="border p-2 text-center text-black dark:text-gray-200">{sale.profit}</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                      <div className="mt-6">
-                        <h3 className="text-xl font-semibold mb-2 text-center text-black dark:text-gray-200">মোট লাভ</h3>
-                        <p className="text-center text-black dark:text-gray-200">
-                          {filteredProfit.reduce((sum, sale) => sum + sale.profit, 0).toFixed(2)} টাকা
-                        </p>
-                      </div>
-                    </>
-                  )}
-
-                  {currentPage === 'profile' && (
-                    <>
-                      <h2 className="text-2xl font-semibold mb-4 text-center text-black dark:text-gray-200">প্রোফাইল</h2>
-                      <div className="space-y-4 max-w-lg mx-auto">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">ফার্মেসির নাম</label>
-                          <input
-                            type="text"
-                            name="name"
-                            value={pharmacyInfo.name}
-                            onChange={handleInputChange}
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">মালিকের নাম</label>
-                          <input
-                            type="text"
-                            name="owner"
-                            value={pharmacyInfo.owner}
-                            onChange={handleInputChange}
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">লাইসেন্স নম্বর</label>
-                          <input
-                            type="text"
-                            name="license"
-                            value={pharmacyInfo.license}
-                            onChange={handleInputChange}
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">ঠিকানা</label>
-                          <input
-                            type="text"
-                            name="address"
-                            value={pharmacyInfo.address}
-                            onChange={handleInputChange}
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">ফোন নম্বর</label>
-                          <input
-                            type="tel"
-                            name="phone"
-                            value={pharmacyInfo.phone}
-                            onChange={handleInputChange}
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">ইমেইল</label>
-                          <input
-                            type="email"
-                            name="email"
-                            value={pharmacyInfo.email}
-                            onChange={handleInputChange}
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">পাসওয়ার্ড</label>
-                          <input
-                            type="password"
-                            name="password"
-                            value={pharmacyInfo.password}
-                            onChange={handleInputChange}
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                          />
-                        </div>
-                        <button
-                          onClick={handleProfileUpdate}
-                          className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 dark:hover:bg-blue-800"
-                        >
-                          প্রোফাইল আপডেট করুন
-                        </button>
-                      </div>
-                    </>
-                  )}
-
-                  {currentPage === 'subscription' && (
-                    <>
-                      <h2 className="text-2xl font-semibold mb-4 text-center text-black dark:text-gray-200">সাবস্ক্রিপশন</h2>
-                      <div className="text-center">
-                        <p className="text-black dark:text-gray-200">আপনার ৩০ দিনের ফ্রি ট্রায়াল চলছে। বাকি আছে: ২৮ দিন।</p>
-                        <p className="mt-2 text-black dark:text-gray-200">
-                          প্রিমিয়াম প্ল্যানে আপগ্রেড করতে,{' '}
-                          <a href="https://x.ai/grok" className="text-blue-600 dark:text-blue-400 hover:underline">
-                            এখানে যান
-                          </a>
-                          ।
-                        </p>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+          {currentPage === 'inventory' && <Inventory />}
+          {currentPage === 'profile' && <Profile />}
         </div>
       );
     };
