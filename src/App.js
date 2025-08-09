@@ -32,9 +32,11 @@ const App = () => {
   const [profitDateRange, setProfitDateRange] = useState({ start: '', end: '' });
   const [selectedSalesDate, setSelectedSalesDate] = useState('');
   const [purchaseReportFilter, setPurchaseReportFilter] = useState({ month: '', year: '' });
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [plan, setPlan] = useState('free');
 
   useEffect(() => {
-    AOS.init();
+    AOS.init({ duration: 1000 });
     setTimeout(() => setIsLoading(false), 2000);
     document.documentElement.className = theme;
     localStorage.setItem('theme', theme);
@@ -67,6 +69,12 @@ const App = () => {
 
   const handleInputChange = (e) => {
     setPharmacyInfo({ ...pharmacyInfo, [e.target.name]: e.target.value });
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setIsAdmin(false);
+    setCurrentPage('dashboard');
   };
 
   return (
@@ -130,7 +138,13 @@ const App = () => {
               সাবস্ক্রিপশন
             </button>
             <button
-              onClick={() => setIsLoggedIn(false)}
+              onClick={() => setCurrentPage('admin')}
+              className={`w-full text-left p-2 rounded-md ${currentPage === 'admin' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
+            >
+              অ্যাডমিন প্যানেল
+            </button>
+            <button
+              onClick={handleLogout}
               className="w-full text-left p-2 rounded-md hover:bg-red-700 dark:hover:bg-red-800"
             >
               লগআউট
@@ -230,6 +244,8 @@ const App = () => {
                 medicines={medicines}
                 inventorySearch={inventorySearch}
                 setInventorySearch={setInventorySearch}
+                setMedicines={setMedicines}
+                setCurrentPage={setCurrentPage}
               />
             )}
             {currentPage === 'add-medicine' && (
@@ -237,6 +253,7 @@ const App = () => {
                 medicines={medicines}
                 setMedicines={setMedicines}
                 setCurrentPage={setCurrentPage}
+                plan={plan}
               />
             )}
             {currentPage === 'new-sale' && (
@@ -248,6 +265,7 @@ const App = () => {
                 setOrderItems={setOrderItems}
                 orderDate={orderDate}
                 setOrderDate={setOrderDate}
+                setCurrentPage={setCurrentPage}
               />
             )}
             {currentPage === 'sales-report' && (
@@ -269,6 +287,7 @@ const App = () => {
                 setProfitSearch={setProfitSearch}
                 profitDateRange={profitDateRange}
                 setProfitDateRange={setProfitDateRange}
+                theme={theme}
               />
             )}
             {currentPage === 'purchase-report' && (
@@ -287,7 +306,17 @@ const App = () => {
               />
             )}
             {currentPage === 'subscription' && (
-              <Subscription />
+              <Subscription
+                setPlan={setPlan}
+                theme={theme}
+              />
+            )}
+            {currentPage === 'admin' && (
+              <AdminPanel
+                setPlan={setPlan}
+                isAdmin={isAdmin}
+                setIsAdmin={setIsAdmin}
+              />
             )}
           </div>
         )}
