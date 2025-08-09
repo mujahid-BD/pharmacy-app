@@ -291,8 +291,8 @@
         { id: 3, medicineName: 'অ্যাট্রোপিন', quantity: 2, date: '2025-07-15', totalPrice: 5.04, profit: 1.04 },
         { id: 4, medicineName: 'অ্যামোক্সিসিলিন', quantity: 3, date: '2025-08-05', totalPrice: 12, profit: 3 }
       ]);
-      const [selectedMedicinePrice, setSelectedMedicinePrice] = useState(null);
-      const [quantity, setQuantity] = useState('');
+      const [orderItems, setOrderItems] = useState([]);
+      const [orderDate, setOrderDate] = useState('');
       const [inventorySearch, setInventorySearch] = useState('');
       const [salesSearch, setSalesSearch] = useState('');
       const [salesDateRange, setSalesDateRange] = useState({ start: '', end: '' });
@@ -361,53 +361,87 @@
         setCurrentPage('dashboard');
       };
 
-      const handleMedicineSelection = (e) => {
-        const selectedName = e.target.value;
-        const medicine = medicines.find(m => m.name === selectedName);
-        setSelectedMedicinePrice(medicine ? medicine.salePrice : null);
-        setQuantity('');
+      const handleAddOrderItem = () => {
+        setOrderItems([...orderItems, { medicineName: '', quantity: '', price: 0 }]);
       };
 
-      const handleQuantityChange = (e) => {
-        const value = e.target.value;
-        setQuantity(value);
+      const handleOrderItemChange = (index, field, value) => {
+        const updatedOrderItems = [...orderItems];
+        updatedOrderItems[index] = { ...updatedOrderItems[index], [field]: value };
+
+        if (field === 'medicineName') {
+          const selectedMedicine = medicines.find(m => m.name === value);
+          if (selectedMedicine) {
+            updatedOrderItems[index].price = selectedMedicine.salePrice;
+          } else {
+            updatedOrderItems[index].price = 0;
+          }
+        }
+
+        setOrderItems(updatedOrderItems);
+      };
+
+      const handleRemoveOrderItem = (index) => {
+        setOrderItems(orderItems.filter((_, i) => i !== index));
       };
 
       const handleAddSale = (e) => {
         e.preventDefault();
-        const medicineName = e.target.medicineName.value;
-        const quantityValue = parseInt(e.target.quantity.value);
-        const date = e.target.date.value;
-        const selectedMedicine = medicines.find(m => m.name === medicineName);
-
-        if (!selectedMedicine) {
-          alert('দয়া করে একটি ওষুধ নির্বাচন করুন।');
-          return;
-        }
-        if (quantityValue > selectedMedicine.stock) {
-          alert('পরিমাণ উপলব্ধ স্টকের চেয়ে বেশি।');
+        if (!orderDate) {
+          alert('দয়া করে বিক্রয়ের তারিখ নির্বাচন করুন।');
           return;
         }
 
-        const totalPrice = (quantityValue * selectedMedicine.salePrice).toFixed(2);
-        const profit = ((selectedMedicine.salePrice - selectedMedicine.purchasePrice) * quantityValue).toFixed(2);
-        const newSale = {
-          id: sales.length + 1,
-          medicineName,
-          quantity: quantityValue,
-          date,
-          totalPrice: parseFloat(totalPrice),
-          profit: parseFloat(profit)
-        };
-        setSales([...sales, newSale]);
-        setMedicines(medicines.map(medicine =>
-          medicine.name === medicineName
-            ? { ...medicine, stock: medicine.stock - quantityValue }
-            : medicine
-        ));
-        e.target.reset();
-        setSelectedMedicinePrice(null);
-        setQuantity('');
+        if (orderItems.length === 0) {
+          alert('দয়া করে কমপক্ষে একটি ওষুধ নির্বাচন করুন।');
+          return;
+        }
+
+        let valid = true;
+        const updatedMedicines = [...medicines];
+        const newSales = [];
+
+        orderItems.forEach((item, index) => {
+          const selectedMedicine = medicines.find(m => m.name === item.medicineName);
+          if (!selectedMedicine) {
+            alert(`ওষুধ "${item.medicineName}" খুঁজে পাওয়া যায়নি।`);
+            valid = false;
+            return;
+          }
+          const quantityValue = parseInt(item.quantity);
+          if (isNaN(quantityValue) || quantityValue <= 0) {
+            alert(`দয়া করে ${item.medicineName} এর জন্য সঠিক পরিমাণ প্রদান করুন।`);
+            valid = false;
+            return;
+          }
+          if (quantityValue > selectedMedicine.stock) {
+            alert(`${item.medicineName} এর জন্য পরিমাণ উপলব্ধ স্টক (${selectedMedicine.stock}) এর চেয়ে বেশি।`);
+            valid = false;
+            return;
+          }
+
+          const totalPrice = (quantityValue * selectedMedicine.salePrice).toFixed(2);
+          const profit = ((selectedMedicine.salePrice - selectedMedicine.purchasePrice) * quantityValue).toFixed(2);
+          newSales.push({
+            id: sales.length + 1 + index,
+            medicineName: item.medicineName,
+            quantity: quantityValue,
+            date: orderDate,
+            totalPrice: parseFloat(totalPrice),
+            profit: parseFloat(profit)
+          });
+
+          const medicineIndex = updatedMedicines.findIndex(m => m.name === item.medicineName);
+          updatedMedicines[medicineIndex].stock -= quantityValue;
+        });
+
+        if (valid) {
+          setSales([...sales, ...newSales]);
+          setMedicines(updatedMedicines);
+          setOrderItems([]);
+          setOrderDate('');
+          alert('বিক্রয় সফলভাবে যোগ করা হয়েছে!');
+        }
       };
 
       const getExpiryStatus = (expiryDate) => {
@@ -954,53 +988,88 @@
                   {currentPage === 'new-sale' && (
                     <>
                       <h2 className="text-2xl font-semibold mb-4 text-center text-black dark:text-gray-200">নতুন বিক্রয়</h2>
-                      <div className="space-y-4 max-w-lg mx-auto">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">ওষুধের নাম</label>
-                          <select
-                            name="medicineName"
-                            onChange={handleMedicineSelection}
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                            required
-                          >
-                            <option value="">ওষুধ নির্বাচন করুন</option>
-                            {medicines.map(medicine => (
-                              <option key={medicine.id} value={medicine.name}>{medicine.name}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">পরিমাণ</label>
-                          <input
-                            type="number"
-                            name="quantity"
-                            value={quantity}
-                            onChange={handleQuantityChange}
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">মোট মূল্য (টাকা)</label>
-                          <input
-                            type="text"
-                            value={selectedMedicinePrice && quantity ? (selectedMedicinePrice * quantity).toFixed(2) : '0.00'}
-                            readOnly
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                          />
-                        </div>
+                      <div className="space-y-4 max-w-4xl mx-auto">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">তারিখ</label>
                           <input
                             type="date"
-                            name="date"
+                            value={orderDate}
+                            onChange={(e) => setOrderDate(e.target.value)}
                             className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
                             required
                           />
                         </div>
+                        <div className="flex justify-between items-center mb-4">
+                          <h3 className="text-lg font-semibold text-black dark:text-gray-200">অর্ডার আইটেম</h3>
+                          <button
+                            onClick={handleAddOrderItem}
+                            className="bg-green-600 text-white p-2 rounded-md hover:bg-green-700 dark:hover:bg-green-800"
+                          >
+                            নতুন ওষুধ যোগ করুন
+                          </button>
+                        </div>
+                        <div className="overflow-x-auto">
+                          <table className="w-full border-collapse text-sm">
+                            <thead>
+                              <tr className="bg-gray-200 dark:bg-gray-700">
+                                <th className="border p-2 text-black dark:text-gray-200">ওষুধের নাম</th>
+                                <th className="border p-2 text-black dark:text-gray-200">পরিমাণ</th>
+                                <th className="border p-2 text-black dark:text-gray-200">মূল্য (টাকা)</th>
+                                <th className="border p-2 text-black dark:text-gray-200">মোট (টাকা)</th>
+                                <th className="border p-2 text-black dark:text-gray-200">অ্যাকশন</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {orderItems.map((item, index) => (
+                                <tr key={index} className="border">
+                                  <td className="border p-2">
+                                    <select
+                                      value={item.medicineName}
+                                      onChange={(e) => handleOrderItemChange(index, 'medicineName', e.target.value)}
+                                      className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                                    >
+                                      <option value="">ওষুধ নির্বাচন করুন</option>
+                                      {medicines.map(medicine => (
+                                        <option key={medicine.id} value={medicine.name}>{medicine.name}</option>
+                                      ))}
+                                    </select>
+                                  </td>
+                                  <td className="border p-2">
+                                    <input
+                                      type="number"
+                                      value={item.quantity}
+                                      onChange={(e) => handleOrderItemChange(index, 'quantity', e.target.value)}
+                                      className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                                      min="1"
+                                    />
+                                  </td>
+                                  <td className="border p-2 text-center text-black dark:text-gray-200">
+                                    {item.price.toFixed(2)}
+                                  </td>
+                                  <td className="border p-2 text-center text-black dark:text-gray-200">
+                                    {(item.quantity && item.price) ? (item.quantity * item.price).toFixed(2) : '0.00'}
+                                  </td>
+                                  <td className="border p-2 text-center">
+                                    <button
+                                      onClick={() => handleRemoveOrderItem(index)}
+                                      className="bg-red-600 text-white p-1 rounded-md hover:bg-red-700 dark:hover:bg-red-800"
+                                    >
+                                      <i className="fas fa-trash"></i>
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                        <div className="mt-4">
+                          <p className="text-lg font-semibold text-black dark:text-gray-200">
+                            মোট মূল্য: {orderItems.reduce((sum, item) => sum + (item.quantity * item.price || 0), 0).toFixed(2)} টাকা
+                          </p>
+                        </div>
                         <button
                           onClick={handleAddSale}
-                          className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 dark:hover:bg-blue-800"
+                          className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 dark:hover:bg-blue-800 mt-4"
                         >
                           বিক্রয় যোগ করুন
                         </button>
