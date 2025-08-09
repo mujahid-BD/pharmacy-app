@@ -471,180 +471,151 @@
           )}
 
           {/* মূল কন্টেন্ট */}
-          <div className={`p-4 ${isLoggedIn ? 'ml-64' : ''}`}>
+          <div className={`flex-1 ${isLoggedIn ? 'ml-64' : ''} flex justify-center items-center`}>
             {!isLoggedIn ? (
-              <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-indigo-100 to-blue-100">
-                <div className="bg-white/80 backdrop-blur-sm p-8 rounded-lg shadow-lg w-full max-w-sm sm:max-w-md md:max-w-md animate-fadeIn">
-                  <div className="flex justify-center mb-6">
-                    <h1 className="text-2xl font-bold text-gray-800">ফার্মেসি অ্যাপ</h1>
-                  </div>
-                  {isRegistering ? (
-                    <>
-                      <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">ফার্মেসি রেজিস্ট্রেশন</h2>
-                      {loginError && (
-                        <p className="text-red-600 bg-red-100 p-3 rounded-md mb-4 text-sm text-center">
-                          ⚠️ {loginError}
-                        </p>
-                      )}
-                      <form onSubmit={handleRegister} className="space-y-4">
-                        <div className="relative">
-                          <label className="block text-sm font-medium text-gray-700">ফার্মেসির নাম</label>
-                          <input
-                            type="text"
-                            name="name"
-                            value={pharmacyInfo.name}
-                            onChange={handleInputChange}
-                            className="mt-1 block w-full p-3 pl-10 border rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                            required
-                          />
-                          <span className="absolute left-3 top-9 text-gray-400">🏥</span>
-                        </div>
-                        <div className="relative">
-                          <label className="block text-sm font-medium text-gray-700">মালিকের নাম</label>
-                          <input
-                            type="text"
-                            name="owner"
-                            value={pharmacyInfo.owner}
-                            onChange={handleInputChange}
-                            className="mt-1 block w-full p-3 pl-10 border rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                            required
-                          />
-                          <span className="absolute left-3 top-9 text-gray-400">👤</span>
-                        </div>
-                        <div className="relative">
-                          <label className="block text-sm font-medium text-gray-700">লাইসেন্স নম্বর</label>
-                          <input
-                            type="text"
-                            name="license"
-                            value={pharmacyInfo.license}
-                            onChange={handleInputChange}
-                            className="mt-1 block w-full p-3 pl-10 border rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                            required
-                          />
-                          <span className="absolute left-3 top-9 text-gray-400">📜</span>
-                        </div>
-                        <div className="relative">
-                          <label className="block text-sm font-medium text-gray-700">ঠিকানা</label>
-                          <input
-                            type="text"
-                            name="address"
-                            value={pharmacyInfo.address}
-                            onChange={handleInputChange}
-                            className="mt-1 block w-full p-3 pl-10 border rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                            required
-                          />
-                          <span className="absolute left-3 top-9 text-gray-400">📍</span>
-                        </div>
-                        <div className="relative">
-                          <label className="block text-sm font-medium text-gray-700">ফোন নম্বর</label>
-                          <input
-                            type="tel"
-                            name="phone"
-                            value={pharmacyInfo.phone}
-                            onChange={handleInputChange}
-                            className="mt-1 block w-full p-3 pl-10 border rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                            required
-                          />
-                          <span className="absolute left-3 top-9 text-gray-400">📞</span>
-                        </div>
-                        <div className="relative">
-                          <label className="block text-sm font-medium text-gray-700">ইমেইল</label>
-                          <input
-                            type="email"
-                            name="email"
-                            value={pharmacyInfo.email}
-                            onChange={handleInputChange}
-                            className="mt-1 block w-full p-3 pl-10 border rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                            required
-                          />
-                          <span className="absolute left-3 top-9 text-gray-400">@</span>
-                        </div>
-                        <div className="relative">
-                          <label className="block text-sm font-medium text-gray-700">পাসওয়ার্ড</label>
-                          <input
-                            type="password"
-                            name="password"
-                            value={pharmacyInfo.password}
-                            onChange={handleInputChange}
-                            className="mt-1 block w-full p-3 pl-10 border rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                            required
-                          />
-                          <span className="absolute left-3 top-9 text-gray-400">🔒</span>
-                        </div>
-                        <button
-                          type="submit"
-                          className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 text-white p-3 rounded-md"
-                        >
-                          রেজিস্টার করুন
-                        </button>
-                      </form>
-                      <p className="mt-4 text-center text-sm">
-                        ইতিমধ্যে একাউন্ট আছে?{' '}
-                        <button
-                          onClick={() => { setIsRegistering(false); setLoginError(''); }}
-                          className="text-indigo-600 hover:underline inline-flex items-center"
-                        >
-                          🔄 লগইন করুন
-                        </button>
-                      </p>
-                      <p className="mt-4 text-center text-sm text-indigo-600">
-                        ৩০ দিনের ফ্রি ট্রায়াল উপভোগ করুন!
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">লগইন</h2>
-                      {loginError && (
-                        <p className="text-red-600 bg-red-100 p-3 rounded-md mb-4 text-sm text-center">
-                          ⚠️ {loginError}
-                        </p>
-                      )}
-                      <form onSubmit={handleLogin} className="space-y-4">
-                        <div className="relative">
-                          <label className="block text-sm font-medium text-gray-700">ইমেইল</label>
-                          <input
-                            type="email"
-                            name="email"
-                            className="mt-1 block w-full p-3 pl-10 border rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                            required
-                          />
-                          <span className="absolute left-3 top-9 text-gray-400">@</span>
-                        </div>
-                        <div className="relative">
-                          <label className="block text-sm font-medium text-gray-700">পাসওয়ার্ড</label>
-                          <input
-                            type="password"
-                            name="password"
-                            className="mt-1 block w-full p-3 pl-10 border rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                            required
-                          />
-                          <span className="absolute left-3 top-9 text-gray-400">🔒</span>
-                        </div>
-                        <button
-                          type="submit"
-                          className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 text-white p-3 rounded-md"
-                        >
-                          লগইন
-                        </button>
-                      </form>
-                      <p className="mt-4 text-center text-sm">
-                        নতুন ব্যবহারকারী?{' '}
-                        <button
-                          onClick={() => { setIsRegistering(true); setLoginError(''); }}
-                          className="text-indigo-600 hover:underline inline-flex items-center"
-                        >
-                          🔄 রেজিস্টার করুন
-                        </button>
-                      </p>
-                      <p className="mt-4 text-center text-sm text-indigo-600">
-                        ৩০ দিনের ফ্রি ট্রায়াল উপভোগ করুন!
-                      </p>
-                    </>
-                  )}
-                </div>
+              <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
+                {isRegistering ? (
+                  <>
+                    <h2 className="text-2xl font-semibold mb-4 text-center">ফার্মেসি রেজিস্ট্রেশন</h2>
+                    <form onSubmit={handleRegister} className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">ফার্মেসির নাম</label>
+                        <input
+                          type="text"
+                          name="name"
+                          value={pharmacyInfo.name}
+                          onChange={handleInputChange}
+                          className="mt-1 block w-full p-2 border rounded-md"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">মালিকের নাম</label>
+                        <input
+                          type="text"
+                          name="owner"
+                          value={pharmacyInfo.owner}
+                          onChange={handleInputChange}
+                          className="mt-1 block w-full p-2 border rounded-md"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">লাইসেন্স নম্বর</label>
+                        <input
+                          type="text"
+                          name="license"
+                          value={pharmacyInfo.license}
+                          onChange={handleInputChange}
+                          className="mt-1 block w-full p-2 border rounded-md"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">ঠিকানা</label>
+                        <input
+                          type="text"
+                          name="address"
+                          value={pharmacyInfo.address}
+                          onChange={handleInputChange}
+                          className="mt-1 block w-full p-2 border rounded-md"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">ফোন নম্বর</label>
+                        <input
+                          type="tel"
+                          name="phone"
+                          value={pharmacyInfo.phone}
+                          onChange={handleInputChange}
+                          className="mt-1 block w-full p-2 border rounded-md"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">ইমেইল</label>
+                        <input
+                          type="email"
+                          name="email"
+                          value={pharmacyInfo.email}
+                          onChange={handleInputChange}
+                          className="mt-1 block w-full p-2 border rounded-md"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">পাসওয়ার্ড</label>
+                        <input
+                          type="password"
+                          name="password"
+                          value={pharmacyInfo.password}
+                          onChange={handleInputChange}
+                          className="mt-1 block w-full p-2 border rounded-md"
+                          required
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700"
+                      >
+                        রেজিস্টার করুন
+                      </button>
+                    </form>
+                    <p className="mt-4 text-center">
+                      ইতিমধ্যে একাউন্ট আছে?{' '}
+                      <button
+                        onClick={() => setIsRegistering(false)}
+                        className="text-blue-600 hover:underline"
+                      >
+                        লগইন করুন
+                      </button>
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-2xl font-semibold mb-4 text-center">লগইন</h2>
+                    {loginError && <p className="text-red-600 text-center mb-4">{loginError}</p>}
+                    <form onSubmit={handleLogin} className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">ইমেইল</label>
+                        <input
+                          type="email"
+                          name="email"
+                          className="mt-1 block w-full p-2 border rounded-md"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">পাসওয়ার্ড</label>
+                        <input
+                          type="password"
+                          name="password"
+                          className="mt-1 block w-full p-2 border rounded-md"
+                          required
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700"
+                      >
+                        লগইন
+                      </button>
+                    </form>
+                    <p className="mt-4 text-center">
+                      নতুন ব্যবহারকারী?{' '}
+                      <button
+                        onClick={() => setIsRegistering(true)}
+                        className="text-blue-600 hover:underline"
+                      >
+                        রেজিস্টার করুন
+                      </button>
+                    </p>
+                  </>
+                )}
               </div>
             ) : (
-              <div className="p-6 w-full max-w-5xl mx-auto">
+              <div className="p-6 w-full max-w-5xl">
                 <div className="bg-white p-6 rounded-lg shadow-md">
                   {currentPage === 'dashboard' && (
                     <>
