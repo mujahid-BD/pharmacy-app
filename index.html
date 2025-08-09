@@ -1,23 +1,41 @@
 <!DOCTYPE html>
-<html lang="bn" class="light">
+<html lang="bn">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ফার্মেসি ম্যানেজমেন্ট অ্যাপ</title>
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;700&display=swap" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <!-- AOS for animations -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" rel="stylesheet">
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone@7.22.9/babel.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+  <!-- Font Awesome for icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <!-- Google Fonts: Noto Sans Bengali -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;700&display=swap" rel="stylesheet">
+  <!-- React and ReactDOM -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <!-- Babel for JSX -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.21.4/babel.min.js"></script>
+  <!-- Stripe for payment integration -->
+  <script src="https://js.stripe.com/v3/"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@stripe/react-stripe-js@2.4.0/dist/react-stripe.umd.min.js"></script>
+  <!-- Custom CSS -->
   <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      font-family: 'Noto Sans Bengali', sans-serif;
+    }
+    .dark {
+      background-color: #1f2937;
+      color: #f3f4f6;
+    }
+  </style>
 </head>
 <body>
   <div id="root"></div>
-  <!-- src/ ফোল্ডারে ফাইলগুলোর পাথ আপডেট করা হয়েছে -->
+  <!-- Load JavaScript files -->
   <script type="text/babel" src="src/utils.js"></script>
   <script type="text/babel" src="src/App.js"></script>
   <script type="text/babel" src="src/Dashboard.js"></script>
@@ -29,9 +47,9 @@
   <script type="text/babel" src="src/PurchaseReport.js"></script>
   <script type="text/babel" src="src/Profile.js"></script>
   <script type="text/babel" src="src/Subscription.js"></script>
+  <script type="text/babel" src="src/AdminPanel.js"></script>
   <script type="text/babel">
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
+    ReactDOM.render(<App />, document.getElementById('root'));
   </script>
 </body>
 </html>
