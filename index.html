@@ -16,6 +16,7 @@
   <style>
     body {
       font-family: 'Noto Sans Bengali', sans-serif;
+      color: #1f2937; /* Default text color for light mode */
     }
     .animate-fade-in {
       animation: fadeIn 0.5s ease-in;
@@ -25,23 +26,32 @@
       to { opacity: 1; transform: translateY(0); }
     }
     .dark {
-      background-color: #1f2937;
-      color: #e5e7eb;
+      background-color: #111827;
+      color: #e5e7eb; /* Default text color for dark mode */
     }
     .dark .bg-white {
-      background-color: #374151;
-    }
-    .dark .bg-gray-100 {
       background-color: #1f2937;
     }
+    .dark .bg-gray-100 {
+      background-color: #111827;
+    }
     .dark .bg-gray-800 {
+      background-color: #1f2937;
+    }
+    .dark .bg-gray-700 {
+      background-color: #374151;
+    }
+    .dark .bg-gray-50 {
       background-color: #111827;
     }
     .dark .text-gray-700 {
-      color: #d1d5db;
+      color: #e5e7eb;
+    }
+    .dark .text-gray-800 {
+      color: #e5e7eb;
     }
     .dark .text-black {
-      color: #e5e7eb;
+      color: #f3f4f6;
     }
     .dark .bg-red-200 {
       background-color: #7f1d1d;
@@ -54,6 +64,9 @@
     }
     .dark .bg-green-200 {
       background-color: #14532d;
+    }
+    .dark .bg-blue-100 {
+      background-color: #1e3a8a;
     }
     .dark .border-gray-300 {
       border-color: #4b5563;
@@ -70,6 +83,9 @@
     .dark .text-green-600 {
       color: #34d399;
     }
+    .dark .text-blue-800 {
+      color: #60a5fa;
+    }
     .dark .bg-blue-600 {
       background-color: #2563eb;
     }
@@ -79,8 +95,26 @@
     .dark .bg-gray-200 {
       background-color: #4b5563;
     }
-    .dark .bg-gray-50 {
+    .dark .bg-gray-600 {
+      background-color: #4b5563;
+    }
+    .dark .text-gray-100 {
+      color: #f3f4f6;
+    }
+    .dark input, .dark select {
+      background-color: #374151;
+      color: #f3f4f6;
+      border-color: #4b5563;
+    }
+    .dark canvas {
       background-color: #1f2937;
+    }
+    /* Ensure all text is visible in dark mode */
+    .dark * {
+      color: #e5e7eb !important;
+    }
+    .dark .text-red-400, .dark .text-yellow-400, .dark .text-blue-400, .dark .text-green-400 {
+      color: inherit !important;
     }
   </style>
 </head>
@@ -107,7 +141,7 @@
             ) : (
               <>
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-2xl font-semibold text-center text-black dark:text-gray-200">
+                  <h2 className="text-2xl font-semibold text-center text-black dark:text-gray-100">
                     স্বাগতম, {pharmacyInfo.owner}!
                   </h2>
                   <button
@@ -115,18 +149,18 @@
                     className="bg-gray-200 dark:bg-gray-700 p-2 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200"
                     aria-label="থিম পরিবর্তন করুন"
                   >
-                    <i className={`fas ${theme === 'light' ? 'fa-moon' : 'fa-sun'} text-lg text-black dark:text-gray-200`}></i>
+                    <i className={`fas ${theme === 'light' ? 'fa-moon' : 'fa-sun'} text-lg text-black dark:text-gray-100`}></i>
                   </button>
                 </div>
                 <div className="mb-6">
-                  <h3 className="text-xl font-semibold mb-2 text-center text-black dark:text-gray-200">
+                  <h3 className="text-xl font-semibold mb-2 text-center text-black dark:text-gray-100">
                     ফার্মেসির তথ্য
                   </h3>
-                  <p className="text-center text-black dark:text-gray-200">ফার্মেসির নাম: {pharmacyInfo.name}</p>
-                  <p className="text-center text-black dark:text-gray-200">লাইসেন্স নম্বর: {pharmacyInfo.license}</p>
-                  <p className="text-center text-black dark:text-gray-200">ঠিকানা: {pharmacyInfo.address}</p>
-                  <p className="text-center text-black dark:text-gray-200">ফোন: {pharmacyInfo.phone}</p>
-                  <p className="text-center text-black dark:text-gray-200">ইমেইল: {pharmacyInfo.email}</p>
+                  <p className="text-center text-black dark:text-gray-100">ফার্মেসির নাম: {pharmacyInfo.name}</p>
+                  <p className="text-center text-black dark:text-gray-100">লাইসেন্স নম্বর: {pharmacyInfo.license}</p>
+                  <p className="text-center text-black dark:text-gray-100">ঠিকানা: {pharmacyInfo.address}</p>
+                  <p className="text-center text-black dark:text-gray-100">ফোন: {pharmacyInfo.phone}</p>
+                  <p className="text-center text-black dark:text-gray-100">ইমেইল: {pharmacyInfo.email}</p>
                 </div>
                 <div className="mb-6">
                   <input
@@ -138,7 +172,7 @@
                         setCurrentPage('inventory');
                       }
                     }}
-                    className="w-full p-2 border rounded-md mb-4 text-black dark:text-gray-200 dark:bg-gray-700 dark:border-gray-600"
+                    className="w-full p-2 border rounded-md text-black dark:text-gray-100 dark:bg-gray-700 dark:border-gray-600"
                   />
                 </div>
                 <div className="mb-6 overflow-x-auto">
@@ -604,7 +638,7 @@
         <div className={`min-h-screen bg-gray-100 dark:bg-gray-900 flex ${theme}`}>
           {isLoggedIn && (
             <div className="w-64 bg-gray-800 dark:bg-gray-900 text-white h-screen p-4 fixed">
-              <h2 className="text-xl font-bold mb-6">ফার্মেসি অ্যাপ</h2>
+              <h2 className="text-xl font-bold mb-6 text-white dark:text-gray-100">ফার্মেসি অ্যাপ</h2>
               <nav className="space-y-2">
                 <button
                   onClick={() => setCurrentPage('dashboard')}
@@ -669,82 +703,82 @@
               <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md w-full max-w-md">
                 {isRegistering ? (
                   <>
-                    <h2 className="text-2xl font-semibold mb-4 text-center text-black dark:text-gray-200">ফার্মেসি রেজিস্ট্রেশন</h2>
+                    <h2 className="text-2xl font-semibold mb-4 text-center text-black dark:text-gray-100">ফার্মেসি রেজিস্ট্রেশন</h2>
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">ফার্মেসির নাম</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-100">ফার্মেসির নাম</label>
                         <input
                           type="text"
                           name="name"
                           value={pharmacyInfo.name}
                           onChange={handleInputChange}
-                          className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                          className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                           required
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">মালিকের নাম</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-100">মালিকের নাম</label>
                         <input
                           type="text"
                           name="owner"
                           value={pharmacyInfo.owner}
                           onChange={handleInputChange}
-                          className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                          className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                           required
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">লাইসেন্স নম্বর</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-100">লাইসেন্স নম্বর</label>
                         <input
                           type="text"
                           name="license"
                           value={pharmacyInfo.license}
                           onChange={handleInputChange}
-                          className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                          className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                           required
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">ঠিকানা</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-100">ঠিকানা</label>
                         <input
                           type="text"
                           name="address"
                           value={pharmacyInfo.address}
                           onChange={handleInputChange}
-                          className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                          className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                           required
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">ফোন নম্বর</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-100">ফোন নম্বর</label>
                         <input
                           type="tel"
                           name="phone"
                           value={pharmacyInfo.phone}
                           onChange={handleInputChange}
-                          className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                          className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                           required
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">ইমেইল</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-100">ইমেইল</label>
                         <input
                           type="email"
                           name="email"
                           value={pharmacyInfo.email}
                           onChange={handleInputChange}
-                          className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                          className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                           required
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">পাসওয়ার্ড</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-100">পাসওয়ার্ড</label>
                         <input
                           type="password"
                           name="password"
                           value={pharmacyInfo.password}
                           onChange={handleInputChange}
-                          className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                          className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                           required
                         />
                       </div>
@@ -755,7 +789,7 @@
                         রেজিস্টার করুন
                       </button>
                     </div>
-                    <p className="mt-4 text-center text-black dark:text-gray-200">
+                    <p className="mt-4 text-center text-black dark:text-gray-100">
                       ইতিমধ্যে একাউন্ট আছে?{' '}
                       <button
                         onClick={() => setIsRegistering(false)}
@@ -767,24 +801,24 @@
                   </>
                 ) : (
                   <>
-                    <h2 className="text-2xl font-semibold mb-4 text-center text-black dark:text-gray-200">লগইন</h2>
+                    <h2 className="text-2xl font-semibold mb-4 text-center text-black dark:text-gray-100">লগইন</h2>
                     {loginError && <p className="text-red-600 dark:text-red-400 text-center mb-4">{loginError}</p>}
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">ইমেইল</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-100">ইমেইল</label>
                         <input
                           type="email"
                           name="email"
-                          className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                          className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                           required
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">পাসওয়ার্ড</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-100">পাসওয়ার্ড</label>
                         <input
                           type="password"
                           name="password"
-                          className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                          className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                           required
                         />
                       </div>
@@ -795,7 +829,7 @@
                         লগইন
                       </button>
                     </div>
-                    <p className="mt-4 text-center text-black dark:text-gray-200">
+                    <p className="mt-4 text-center text-black dark:text-gray-100">
                       নতুন ব্যবহারকারী?{' '}
                       <button
                         onClick={() => setIsRegistering(true)}
@@ -825,7 +859,7 @@
 
                   {currentPage === 'inventory' && (
                     <>
-                      <h2 className="text-2xl font-semibold mb-4 text-center text-black dark:text-gray-200">ইনভেন্টরি ম্যানেজমেন্ট</h2>
+                      <h2 className="text-2xl font-semibold mb-4 text-center text-black dark:text-gray-100">ইনভেন্টরি ম্যানেজমেন্ট</h2>
                       <div className="mb-6">
                         <div className="flex flex-col md:flex-row gap-4 mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-md shadow-md">
                           <input
@@ -833,7 +867,7 @@
                             placeholder="নাম, জেনেরিক, কোম্পানি, ফর্মুলেশন, বা 'low stock', 'expired' দিয়ে সার্চ করুন"
                             value={inventorySearch}
                             onChange={(e) => setInventorySearch(e.target.value)}
-                            className="flex-1 p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
+                            className="flex-1 p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-gray-100"
                           />
                           <button
                             onClick={() => setInventorySearch('')}
@@ -842,20 +876,20 @@
                             রিসেট
                           </button>
                         </div>
-                        <h3 className="text-xl font-semibold mb-2 text-center text-black dark:text-gray-200">ওষুধের তালিকা</h3>
+                        <h3 className="text-xl font-semibold mb-2 text-center text-black dark:text-gray-100">ওষুধের তালিকা</h3>
                         <div className="overflow-x-auto">
                           <table className="w-full border-collapse mx-auto text-sm">
                             <thead>
                               <tr className="bg-gray-200 dark:bg-gray-700">
-                                <th className="border p-2 text-black dark:text-gray-200">ওষুধের নাম</th>
-                                <th className="border p-2 text-black dark:text-gray-200">জেনেরিক নাম</th>
-                                <th className="border p-2 text-black dark:text-gray-200">কোম্পানি</th>
-                                <th className="border p-2 text-black dark:text-gray-200">ফর্মুলেশন</th>
-                                <th className="border p-2 text-black dark:text-gray-200">পাওয়ার</th>
-                                <th className="border p-2 text-black dark:text-gray-200">স্টক</th>
-                                <th className="border p-2 text-black dark:text-gray-200">ক্রয় মূল্য (টাকা)</th>
-                                <th className="border p-2 text-black dark:text-gray-200">বিক্রয় মূল্য (টাকা)</th>
-                                <th className="border p-2 text-black dark:text-gray-200">মেয়াদোত্তীর্ণ তারিখ</th>
+                                <th className="border p-2 text-black dark:text-gray-100">ওষুধের নাম</th>
+                                <th className="border p-2 text-black dark:text-gray-100">জেনেরিক নাম</th>
+                                <th className="border p-2 text-black dark:text-gray-100">কোম্পানি</th>
+                                <th className="border p-2 text-black dark:text-gray-100">ফর্মুলেশন</th>
+                                <th className="border p-2 text-black dark:text-gray-100">পাওয়ার</th>
+                                <th className="border p-2 text-black dark:text-gray-100">স্টক</th>
+                                <th className="border p-2 text-black dark:text-gray-100">ক্রয় মূল্য (টাকা)</th>
+                                <th className="border p-2 text-black dark:text-gray-100">বিক্রয় মূল্য (টাকা)</th>
+                                <th className="border p-2 text-black dark:text-gray-100">মেয়াদোত্তীর্ণ তারিখ</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -868,20 +902,20 @@
                                       medicine.stock <= 10 ? 'bg-red-100 dark:bg-red-900' : expiryStatus !== 'valid' ? 'bg-yellow-100 dark:bg-yellow-900' : ''
                                     }`}
                                   >
-                                    <td className="border p-2 text-center text-black dark:text-gray-200">{medicine.name}</td>
-                                    <td className="border p-2 text-center text-black dark:text-gray-200">{medicine.generic}</td>
-                                    <td className="border p-2 text-center text-black dark:text-gray-200">{medicine.company}</td>
-                                    <td className="border p-2 text-center text-black dark:text-gray-200">{medicine.formulation}</td>
-                                    <td className="border p-2 text-center text-black dark:text-gray-200">{medicine.power}</td>
-                                    <td className="border p-2 text-center text-black dark:text-gray-200">
+                                    <td className="border p-2 text-center text-black dark:text-gray-100">{medicine.name}</td>
+                                    <td className="border p-2 text-center text-black dark:text-gray-100">{medicine.generic}</td>
+                                    <td className="border p-2 text-center text-black dark:text-gray-100">{medicine.company}</td>
+                                    <td className="border p-2 text-center text-black dark:text-gray-100">{medicine.formulation}</td>
+                                    <td className="border p-2 text-center text-black dark:text-gray-100">{medicine.power}</td>
+                                    <td className="border p-2 text-center text-black dark:text-gray-100">
                                       {medicine.stock}
                                       {medicine.stock <= 10 && (
                                         <span className="ml-2 text-red-600 dark:text-red-400">⚠️ কম স্টক</span>
                                       )}
                                     </td>
-                                    <td className="border p-2 text-center text-black dark:text-gray-200">{medicine.purchasePrice}</td>
-                                    <td className="border p-2 text-center text-black dark:text-gray-200">{medicine.salePrice}</td>
-                                    <td className="border p-2 text-center text-black dark:text-gray-200">
+                                    <td className="border p-2 text-center text-black dark:text-gray-100">{medicine.purchasePrice}</td>
+                                    <td className="border p-2 text-center text-black dark:text-gray-100">{medicine.salePrice}</td>
+                                    <td className="border p-2 text-center text-black dark:text-gray-100">
                                       {medicine.expiry}
                                       {expiryStatus === 'expired' && (
                                         <span className="ml-2 text-red-600 dark:text-red-400">⚠️ মেয়াদোত্তীর্ণ</span>
@@ -902,88 +936,88 @@
 
                   {currentPage === 'add-medicine' && (
                     <>
-                      <h2 className="text-2xl font-semibold mb-4 text-center text-black dark:text-gray-200">নতুন ওষুধ যোগ করুন</h2>
+                      <h2 className="text-2xl font-semibold mb-4 text-center text-black dark:text-gray-100">নতুন ওষুধ যোগ করুন</h2>
                       <div className="space-y-4 max-w-lg mx-auto">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">ওষুধের নাম</label>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-100">ওষুধের নাম</label>
                           <input
                             type="text"
                             name="name"
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">জেনেরিক নাম</label>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-100">জেনেরিক নাম</label>
                           <input
                             type="text"
                             name="generic"
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                            required
-                          />
+                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-7
+
+System: 00 dark:border-gray-600 dark:text-gray-100" required />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">কোম্পানির নাম</label>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-100">কোম্পানির নাম</label>
                           <input
                             type="text"
                             name="company"
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">ফর্মুলেশন</label>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-100">ফর্মুলেশন</label>
                           <input
                             type="text"
                             name="formulation"
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">পাওয়ার</label>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-100">পাওয়ার</label>
                           <input
                             type="text"
                             name="power"
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">স্টক</label>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-100">স্টক</label>
                           <input
                             type="number"
                             name="stock"
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">মেয়াদোত্তীর্ণ তারিখ</label>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-100">মেয়াদোত্তীর্ণ তারিখ</label>
                           <input
                             type="date"
                             name="expiry"
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">ক্রয় মূল্য (টাকা)</label>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-100">ক্রয় মূল্য (টাকা)</label>
                           <input
                             type="number"
                             name="purchasePrice"
                             step="0.01"
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">বিক্রয় মূল্য (টাকা)</label>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-100">বিক্রয় মূল্য (টাকা)</label>
                           <input
                             type="number"
                             name="salePrice"
                             step="0.01"
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                             required
                           />
                         </div>
@@ -999,20 +1033,20 @@
 
                   {currentPage === 'new-sale' && (
                     <>
-                      <h2 className="text-2xl font-semibold mb-4 text-center text-black dark:text-gray-200">নতুন বিক্রয়</h2>
+                      <h2 className="text-2xl font-semibold mb-4 text-center text-black dark:text-gray-100">নতুন বিক্রয়</h2>
                       <div className="space-y-4 max-w-4xl mx-auto">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">তারিখ</label>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-100">তারিখ</label>
                           <input
                             type="date"
                             value={orderDate}
                             onChange={(e) => setOrderDate(e.target.value)}
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                             required
                           />
                         </div>
                         <div className="flex justify-between items-center mb-4">
-                          <h3 className="text-lg font-semibold text-black dark:text-gray-200">অর্ডার আইটেম</h3>
+                          <h3 className="text-lg font-semibold text-black dark:text-gray-100">অর্ডার আইটেম</h3>
                           <button
                             onClick={handleAddOrderItem}
                             className="bg-green-600 text-white p-2 rounded-md hover:bg-green-700 dark:hover:bg-green-800"
@@ -1024,11 +1058,11 @@
                           <table className="w-full border-collapse text-sm">
                             <thead>
                               <tr className="bg-gray-200 dark:bg-gray-700">
-                                <th className="border p-2 text-black dark:text-gray-200">ওষুধের নাম</th>
-                                <th className="border p-2 text-black dark:text-gray-200">পরিমাণ</th>
-                                <th className="border p-2 text-black dark:text-gray-200">মূল্য (টাকা)</th>
-                                <th className="border p-2 text-black dark:text-gray-200">মোট (টাকা)</th>
-                                <th className="border p-2 text-black dark:text-gray-200">অ্যাকশন</th>
+                                <th className="border p-2 text-black dark:text-gray-100">ওষুধের নাম</th>
+                                <th className="border p-2 text-black dark:text-gray-100">পরিমাণ</th>
+                                <th className="border p-2 text-black dark:text-gray-100">মূল্য (টাকা)</th>
+                                <th className="border p-2 text-black dark:text-gray-100">মোট (টাকা)</th>
+                                <th className="border p-2 text-black dark:text-gray-100">অ্যাকশন</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -1038,7 +1072,7 @@
                                     <select
                                       value={item.medicineName}
                                       onChange={(e) => handleOrderItemChange(index, 'medicineName', e.target.value)}
-                                      className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                                      className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                                     >
                                       <option value="">ওষুধ নির্বাচন করুন</option>
                                       {medicines.map(medicine => (
@@ -1051,14 +1085,14 @@
                                       type="number"
                                       value={item.quantity}
                                       onChange={(e) => handleOrderItemChange(index, 'quantity', e.target.value)}
-                                      className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                                      className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                                       min="1"
                                     />
                                   </td>
-                                  <td className="border p-2 text-center text-black dark:text-gray-200">
+                                  <td className="border p-2 text-center text-black dark:text-gray-100">
                                     {item.price.toFixed(2)}
                                   </td>
-                                  <td className="border p-2 text-center text-black dark:text-gray-200">
+                                  <td className="border p-2 text-center text-black dark:text-gray-100">
                                     {(item.quantity && item.price) ? (item.quantity * item.price).toFixed(2) : '0.00'}
                                   </td>
                                   <td className="border p-2 text-center">
@@ -1075,7 +1109,7 @@
                           </table>
                         </div>
                         <div className="mt-4">
-                          <p className="text-lg font-semibold text-black dark:text-gray-200">
+                          <p className="text-lg font-semibold text-black dark:text-gray-100">
                             মোট মূল্য: {orderItems.reduce((sum, item) => sum + (item.quantity * item.price || 0), 0).toFixed(2)} টাকা
                           </p>
                         </div>
@@ -1091,16 +1125,16 @@
 
                   {currentPage === 'sales-report' && (
                     <>
-                      <h2 className="text-2xl font-semibold mb-4 text-center text-black dark:text-gray-200">বিক্রয় রিপোর্ট</h2>
+                      <h2 className="text-2xl font-semibold mb-4 text-center text-black dark:text-gray-100">বিক্রয় রিপোর্ট</h2>
                       <div className="mb-6">
-                        <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-md shadow-md">
-                          <h3 className="text-lg font-semibold mb-2 text-black dark:text-gray-200">নির্দিষ্ট তারিখের সারাংশ</h3>
+                        <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-md shadow-md">
+                          <h3 className="text-lg font-semibold mb-2 text-black dark:text-gray-100">নির্দিষ্ট তারিখের সারাংশ</h3>
                           <div className="flex flex-col md:flex-row gap-4 items-center">
                             <input
                               type="date"
                               value={selectedSalesDate}
                               onChange={(e) => setSelectedSalesDate(e.target.value)}
-                              className="p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                              className="p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                             />
                           </div>
                           {selectedSalesDate && (
@@ -1123,19 +1157,19 @@
                             placeholder="ওষুধের নাম দিয়ে সার্চ করুন"
                             value={salesSearch}
                             onChange={(e) => setSalesSearch(e.target.value)}
-                            className="flex-1 p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
+                            className="flex-1 p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-gray-100"
                           />
                           <input
                             type="date"
                             value={salesDateRange.start}
                             onChange={(e) => setSalesDateRange({ ...salesDateRange, start: e.target.value })}
-                            className="p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
+                            className="p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-gray-100"
                           />
                           <input
                             type="date"
                             value={salesDateRange.end}
                             onChange={(e) => setSalesDateRange({ ...salesDateRange, end: e.target.value })}
-                            className="p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
+                            className="p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-gray-100"
                           />
                           <button
                             onClick={() => { setSalesSearch(''); setSalesDateRange({ start: '', end: '' }); }}
@@ -1148,36 +1182,36 @@
                           <table className="w-full border-collapse mx-auto text-sm">
                             <thead>
                               <tr className="bg-gray-200 dark:bg-gray-700">
-                                <th className="border p-2 text-black dark:text-gray-200">ওষুধের নাম</th>
-                                <th className="border p-2 text-black dark:text-gray-200">পরিমাণ</th>
-                                <th className="border p-2 text-black dark:text-gray-200">তারিখ</th>
-                                <th className="border p-2 text-black dark:text-gray-200">মোট মূল্য (টাকা)</th>
-                                <th className="border p-2 text-black dark:text-gray-200">লাভ (টাকা)</th>
+                                <th className="border p-2 text-black dark:text-gray-100">ওষুধের নাম</th>
+                                <th className="border p-2 text-black dark:text-gray-100">পরিমাণ</th>
+                                <th className="border p-2 text-black dark:text-gray-100">তারিখ</th>
+                                <th className="border p-2 text-black dark:text-gray-100">মোট মূল্য (টাকা)</th>
+                                <th className="border p-2 text-black dark:text-gray-100">লাভ (টাকা)</th>
                               </tr>
                             </thead>
                             <tbody>
                               {filteredSales.map(sale => (
                                 <tr key={sale.id} className="border">
-                                  <td className="border p-2 text-center text-black dark:text-gray-200">{sale.medicineName}</td>
-                                  <td className="border p-2 text-center text-black dark:text-gray-200">{sale.quantity}</td>
-                                  <td className="border p-2 text-center text-black dark:text-gray-200">{sale.date}</td>
-                                  <td className="border p-2 text-center text-black dark:text-gray-200">{sale.totalPrice}</td>
-                                  <td className="border p-2 text-center text-black dark:text-gray-200">{sale.profit}</td>
+                                  <td className="border p-2 text-center text-black dark:text-gray-100">{sale.medicineName}</td>
+                                  <td className="border p-2 text-center text-black dark:text-gray-100">{sale.quantity}</td>
+                                  <td className="border p-2 text-center text-black dark:text-gray-100">{sale.date}</td>
+                                  <td className="border p-2 text-center text-black dark:text-gray-100">{sale.totalPrice}</td>
+                                  <td className="border p-2 text-center text-black dark:text-gray-100">{sale.profit}</td>
                                 </tr>
                               ))}
                             </tbody>
                           </table>
                         </div>
                         <div className="mt-6">
-                          <h3 className="text-xl font-semibold mb-2 text-center text-black dark:text-gray-200">দৈনিক বিক্রয় চার্ট</h3>
+                          <h3 className="text-xl font-semibold mb-2 text-center text-black dark:text-gray-100">দৈনিক বিক্রয় চার্ট</h3>
                           <canvas id="salesChart"></canvas>
                         </div>
                         <div className="mt-6">
-                          <h3 className="text-xl font-semibold mb-2 text-center text-black dark:text-gray-200">মাসিক বিক্রয় চার্ট</h3>
+                          <h3 className="text-xl font-semibold mb-2 text-center text-black dark:text-gray-100">মাসিক বিক্রয় চার্ট</h3>
                           <canvas id="monthlySalesChart"></canvas>
                         </div>
                         <div className="mt-6">
-                          <h3 className="text-xl font-semibold mb-2 text-center text-black dark:text-gray-200">সাপ্তাহিক বিক্রয় চার্ট</h3>
+                          <h3 className="text-xl font-semibold mb-2 text-center text-black dark:text-gray-100">সাপ্তাহিক বিক্রয় চার্ট</h3>
                           <canvas id="weeklySalesChart"></canvas>
                         </div>
                       </div>
@@ -1186,7 +1220,7 @@
 
                   {currentPage === 'profit-loss' && (
                     <>
-                      <h2 className="text-2xl font-semibold mb-4 text-center text-black dark:text-gray-200">লাভ/ক্ষতি রিপোর্ট</h2>
+                      <h2 className="text-2xl font-semibold mb-4 text-center text-black dark:text-gray-100">লাভ/ক্ষতি রিপোর্ট</h2>
                       <div className="mb-6">
                         <div className="flex flex-col md:flex-row gap-4 mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-md shadow-md">
                           <input
@@ -1194,19 +1228,19 @@
                             placeholder="ওষুধের নাম দিয়ে সার্চ করুন"
                             value={profitSearch}
                             onChange={(e) => setProfitSearch(e.target.value)}
-                            className="flex-1 p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
+                            className="flex-1 p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-gray-100"
                           />
                           <input
                             type="date"
                             value={profitDateRange.start}
                             onChange={(e) => setProfitDateRange({ ...profitDateRange, start: e.target.value })}
-                            className="p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
+                            className="p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-gray-100"
                           />
                           <input
                             type="date"
                             value={profitDateRange.end}
                             onChange={(e) => setProfitDateRange({ ...profitDateRange, end: e.target.value })}
-                            className="p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
+                            className="p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-gray-100"
                           />
                           <button
                             onClick={() => { setProfitSearch(''); setProfitDateRange({ start: '', end: '' }); }}
@@ -1219,21 +1253,21 @@
                           <table className="w-full border-collapse mx-auto text-sm">
                             <thead>
                               <tr className="bg-gray-200 dark:bg-gray-700">
-                                <th className="border p-2 text-black dark:text-gray-200">ওষুধের নাম</th>
-                                <th className="border p-2 text-black dark:text-gray-200">পরিমাণ</th>
-                                <th className="border p-2 text-black dark:text-gray-200">তারিখ</th>
-                                <th className="border p-2 text-black dark:text-gray-200">মোট মূল্য (টাকা)</th>
-                                <th className="border p-2 text-black dark:text-gray-200">লাভ (টাকা)</th>
+                                <th className="border p-2 text-black dark:text-gray-100">ওষুধের নাম</th>
+                                <th className="border p-2 text-black dark:text-gray-100">পরিমাণ</th>
+                                <th className="border p-2 text-black dark:text-gray-100">তারিখ</th>
+                                <th className="border p-2 text-black dark:text-gray-100">মোট মূল্য (টাকা)</th>
+                                <th className="border p-2 text-black dark:text-gray-100">লাভ (টাকা)</th>
                               </tr>
                             </thead>
                             <tbody>
                               {filteredProfit.map(sale => (
                                 <tr key={sale.id} className="border">
-                                  <td className="border p-2 text-center text-black dark:text-gray-200">{sale.medicineName}</td>
-                                  <td className="border p-2 text-center text-black dark:text-gray-200">{sale.quantity}</td>
-                                  <td className="border p-2 text-center text-black dark:text-gray-200">{sale.date}</td>
-                                  <td className="border p-2 text-center text-black dark:text-gray-200">{sale.totalPrice}</td>
-                                  <td className="border p-2 text-center text-black dark:text-gray-200">{sale.profit}</td>
+                                  <td className="border p-2 text-center text-black dark:text-gray-100">{sale.medicineName}</td>
+                                  <td className="border p-2 text-center text-black dark:text-gray-100">{sale.quantity}</td>
+                                  <td className="border p-2 text-center text-black dark:text-gray-100">{sale.date}</td>
+                                  <td className="border p-2 text-center text-black dark:text-gray-100">{sale.totalPrice}</td>
+                                  <td className="border p-2 text-center text-black dark:text-gray-100">{sale.profit}</td>
                                 </tr>
                               ))}
                             </tbody>
@@ -1241,8 +1275,8 @@
                         </div>
                       </div>
                       <div className="mt-6">
-                        <h3 className="text-xl font-semibold mb-2 text-center text-black dark:text-gray-200">মোট লাভ</h3>
-                        <p className="text-center text-black dark:text-gray-200">
+                        <h3 className="text-xl font-semibold mb-2 text-center text-black dark:text-gray-100">মোট লাভ</h3>
+                        <p className="text-center text-black dark:text-gray-100">
                           {filteredProfit.reduce((sum, sale) => sum + sale.profit, 0).toFixed(2)} টাকা
                         </p>
                       </div>
@@ -1251,76 +1285,76 @@
 
                   {currentPage === 'profile' && (
                     <>
-                      <h2 className="text-2xl font-semibold mb-4 text-center text-black dark:text-gray-200">প্রোফাইল</h2>
+                      <h2 className="text-2xl font-semibold mb-4 text-center text-black dark:text-gray-100">প্রোফাইল</h2>
                       <div className="space-y-4 max-w-lg mx-auto">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">ফার্মেসির নাম</label>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-100">ফার্মেসির নাম</label>
                           <input
                             type="text"
                             name="name"
                             value={pharmacyInfo.name}
                             onChange={handleInputChange}
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">মালিকের নাম</label>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-100">মালিকের নাম</label>
                           <input
                             type="text"
                             name="owner"
                             value={pharmacyInfo.owner}
                             onChange={handleInputChange}
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">লাইসেন্স নম্বর</label>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-100">লাইসেন্স নম্বর</label>
                           <input
                             type="text"
                             name="license"
                             value={pharmacyInfo.license}
                             onChange={handleInputChange}
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">ঠিকানা</label>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-100">ঠিকানা</label>
                           <input
                             type="text"
                             name="address"
                             value={pharmacyInfo.address}
                             onChange={handleInputChange}
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">ফোন নম্বর</label>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-100">ফোন নম্বর</label>
                           <input
                             type="tel"
                             name="phone"
                             value={pharmacyInfo.phone}
                             onChange={handleInputChange}
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">ইমেইল</label>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-100">ইমেইল</label>
                           <input
                             type="email"
                             name="email"
                             value={pharmacyInfo.email}
                             onChange={handleInputChange}
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">পাসওয়ার্ড</label>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-100">পাসওয়ার্ড</label>
                           <input
                             type="password"
                             name="password"
                             value={pharmacyInfo.password}
                             onChange={handleInputChange}
-                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                            className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                           />
                         </div>
                         <button
@@ -1335,10 +1369,10 @@
 
                   {currentPage === 'subscription' && (
                     <>
-                      <h2 className="text-2xl font-semibold mb-4 text-center text-black dark:text-gray-200">সাবস্ক্রিপশন</h2>
+                      <h2 className="text-2xl font-semibold mb-4 text-center text-black dark:text-gray-100">সাবস্ক্রিপশন</h2>
                       <div className="text-center">
-                        <p className="text-black dark:text-gray-200">আপনার ৩০ দিনের ফ্রি ট্রায়াল চলছে। বাকি আছে: ২৮ দিন।</p>
-                        <p className="mt-2 text-black dark:text-gray-200">
+                        <p className="text-black dark:text-gray-100">আপনার ৩০ দিনের ফ্রি ট্রায়াল চলছে। বাকি আছে: ২৮ দিন।</p>
+                        <p className="mt-2 text-black dark:text-gray-100">
                           প্রিমিয়াম প্ল্যানে আপগ্রেড করতে,{' '}
                           <a href="https://x.ai/grok" className="text-blue-600 dark:text-blue-400 hover:underline">
                             এখানে যান
