@@ -298,6 +298,7 @@
       const [salesDateRange, setSalesDateRange] = useState({ start: '', end: '' });
       const [profitSearch, setProfitSearch] = useState('');
       const [profitDateRange, setProfitDateRange] = useState({ start: '', end: '' });
+      const [selectedSalesDate, setSelectedSalesDate] = useState('');
 
       useEffect(() => {
         AOS.init();
@@ -487,6 +488,14 @@
           (!endDate || saleDate <= endDate);
         return matchesSearch && matchesDate;
       });
+
+      const getDailySalesSummary = (date) => {
+        if (!date) return { totalSales: 0, totalProfit: 0 };
+        const filtered = sales.filter(sale => sale.date === date);
+        const totalSales = filtered.reduce((sum, sale) => sum + sale.totalPrice, 0).toFixed(2);
+        const totalProfit = filtered.reduce((sum, sale) => sum + sale.profit, 0).toFixed(2);
+        return { totalSales, totalProfit };
+      };
 
       const getMonthlySales = () => {
         return filteredSales.reduce((acc, sale) => {
@@ -1081,6 +1090,30 @@
                     <>
                       <h2 className="text-2xl font-semibold mb-4 text-center text-black dark:text-gray-200">বিক্রয় রিপোর্ট</h2>
                       <div className="mb-6">
+                        <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-md shadow-md">
+                          <h3 className="text-lg font-semibold mb-2 text-black dark:text-gray-200">নির্দিষ্ট তারিখের সারাংশ</h3>
+                          <div className="flex flex-col md:flex-row gap-4 items-center">
+                            <input
+                              type="date"
+                              value={selectedSalesDate}
+                              onChange={(e) => setSelectedSalesDate(e.target.value)}
+                              className="p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
+                            />
+                          </div>
+                          {selectedSalesDate && (
+                            <div className="mt-4 text-center">
+                              <p className="text-lg font-semibold text-black dark:text-gray-200">
+                                তারিখ: {selectedSalesDate}
+                              </p>
+                              <p className="text-lg font-semibold text-black dark:text-gray-200">
+                                মোট বিক্রয়: {getDailySalesSummary(selectedSalesDate).totalSales} টাকা
+                              </p>
+                              <p className="text-lg font-semibold text-black dark:text-gray-200">
+                                মোট লাভ: {getDailySalesSummary(selectedSalesDate).totalProfit} টাকা
+                              </p>
+                            </div>
+                          )}
+                        </div>
                         <div className="flex flex-col md:flex-row gap-4 mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-md shadow-md">
                           <input
                             type="text"
