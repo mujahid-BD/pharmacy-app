@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ফার্মেসি ম্যানেজমেন্ট অ্যাপ</title>
-  <link href="/pharmacy-app/dist/style.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;700&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" rel="stylesheet">
@@ -301,7 +301,7 @@
 
       useEffect(() => {
         AOS.init();
-        setTimeout(() => setIsLoading(false), 2000); // লোডিং টাইম ২ সেকেন্ডে সেট করা হয়েছে
+        setTimeout(() => setIsLoading(false), 2000);
         document.documentElement.className = theme;
         localStorage.setItem('theme', theme);
       }, [theme]);
@@ -556,7 +556,6 @@
 
       return (
         <div className={`min-h-screen bg-gray-100 dark:bg-gray-900 flex ${theme}`}>
-          {/* সাইডবার নেভিগেশন */}
           {isLoggedIn && (
             <div className="w-64 bg-gray-800 dark:bg-gray-900 text-white h-screen p-4 fixed">
               <h2 className="text-xl font-bold mb-6">ফার্মেসি অ্যাপ</h2>
@@ -619,7 +618,6 @@
             </div>
           )}
 
-          {/* মূল কন্টেন্ট */}
           <div className={`flex-1 ${isLoggedIn ? 'ml-64' : ''} flex justify-center items-center`}>
             {!isLoggedIn ? (
               <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md w-full max-w-md">
