@@ -18,7 +18,6 @@
     const App = () => {
       const [isLoggedIn, setIsLoggedIn] = useState(false);
       const [isRegistering, setIsRegistering] = useState(false);
-      const [isSidebarOpen, setIsSidebarOpen] = useState(false);
       const [currentPage, setCurrentPage] = useState('dashboard');
       const [pharmacyInfo, setPharmacyInfo] = useState({
         name: '',
@@ -99,25 +98,17 @@
 
       const handleRegister = (e) => {
         e.preventDefault();
-        if (!/^\S+@\S+\.\S+$/.test(pharmacyInfo.email)) {
-          setLoginError('অবৈধ ইমেইল ফরম্যাট।');
-          return;
-        }
         setLoginCredentials({ email: pharmacyInfo.email, password: pharmacyInfo.password });
+        console.log('Registered Pharmacy Info:', pharmacyInfo);
         setIsLoggedIn(true);
         setIsRegistering(false);
         setCurrentPage('dashboard');
-        setLoginError('');
       };
 
       const handleLogin = (e) => {
         e.preventDefault();
         const email = e.target.email.value;
         const password = e.target.password.value;
-        if (!/^\S+@\S+\.\S+$/.test(email)) {
-          setLoginError('অবৈধ ইমেইল ফরম্যাট।');
-          return;
-        }
         if (loginCredentials && loginCredentials.email === email && loginCredentials.password === password) {
           setIsLoggedIn(true);
           setCurrentPage('dashboard');
@@ -152,10 +143,7 @@
 
       const handleProfileUpdate = (e) => {
         e.preventDefault();
-        if (!/^\S+@\S+\.\S+$/.test(pharmacyInfo.email)) {
-          alert('অবৈধ ইমেইল ফরম্যাট।');
-          return;
-        }
+        console.log('Updated Pharmacy Info:', pharmacyInfo);
         setCurrentPage('dashboard');
       };
 
@@ -286,8 +274,6 @@
                   }]
                 },
                 options: {
-                  responsive: true,
-                  maintainAspectRatio: false,
                   scales: {
                     y: {
                       beginAtZero: true
@@ -315,8 +301,6 @@
                   }]
                 },
                 options: {
-                  responsive: true,
-                  maintainAspectRatio: false,
                   scales: {
                     y: {
                       beginAtZero: true
@@ -343,8 +327,6 @@
                   }]
                 },
                 options: {
-                  responsive: true,
-                  maintainAspectRatio: false,
                   scales: {
                     y: {
                       beginAtZero: true
@@ -360,14 +342,14 @@
       }, [currentPage, filteredSales]);
 
       return (
-        <div className="min-h-screen bg-gray-100">
+        <div className="min-h-screen bg-gray-100 flex">
           {/* মডাল কম্পোনেন্ট */}
           {showLowStockModal && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white p-6 rounded-lg shadow-lg w-[95%] max-w-md">
+              <div className="bg-white p-6 rounded-lg shadow-md max-w-lg w-full">
                 <h3 className="text-xl font-semibold mb-4 text-center">কম স্টকের ওষুধ</h3>
                 {lowStockMedicines.length > 0 ? (
-                  <ul className="list-disc pl-5 text-sm">
+                  <ul className="list-disc pl-5">
                     {lowStockMedicines.map(m => (
                       <li key={m.id}>
                         {m.name} ({m.generic}) - স্টক: {m.stock}
@@ -375,11 +357,11 @@
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-center text-sm">কোনো কম স্টকের ওষুধ নেই।</p>
+                  <p className="text-center">কোনো কম স্টকের ওষুধ নেই।</p>
                 )}
                 <button
                   onClick={() => setShowLowStockModal(false)}
-                  className="mt-4 w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white p-3 rounded-md hover:scale-105 transition-transform active:bg-opacity-80"
+                  className="mt-4 w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700"
                 >
                   বন্ধ করুন
                 </button>
@@ -388,10 +370,10 @@
           )}
           {showExpiryModal && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white p-6 rounded-lg shadow-lg w-[95%] max-w-md">
+              <div className="bg-white p-6 rounded-lg shadow-md max-w-lg w-full">
                 <h3 className="text-xl font-semibold mb-4 text-center">মেয়াদোত্তীর্ণ/আসন্ন মেয়াদোত্তীর্ণ ওষুধ</h3>
                 {expiringMedicines.length > 0 ? (
-                  <ul className="list-disc pl-5 text-sm">
+                  <ul className="list-disc pl-5">
                     {expiringMedicines.map(m => (
                       <li key={m.id}>
                         {m.name} ({m.generic}) - মেয়াদ: {m.expiry} (
@@ -400,11 +382,11 @@
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-center text-sm">কোনো মেয়াদোত্তীর্ণ ওষুধ নেই।</p>
+                  <p className="text-center">কোনো মেয়াদোত্তীর্ণ ওষুধ নেই।</p>
                 )}
                 <button
                   onClick={() => setShowExpiryModal(false)}
-                  className="mt-4 w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white p-3 rounded-md hover:scale-105 transition-transform active:bg-opacity-80"
+                  className="mt-4 w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700"
                 >
                   বন্ধ করুন
                 </button>
@@ -412,102 +394,62 @@
             </div>
           )}
 
-          {/* হ্যামবার্গার মেনু */}
-          {isLoggedIn && (
-            <div className="md:hidden p-4 bg-gray-800 text-white">
-              <button
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="text-2xl"
-              >
-                ☰
-              </button>
-            </div>
-          )}
-
           {/* সাইডবার নেভিগেশন */}
           {isLoggedIn && (
-            <div
-              className={`fixed top-0 left-0 h-full bg-gray-800 text-white w-64 p-4 transform ${
-                isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-              } md:translate-x-0 transition-transform duration-300 ease-in-out z-40 md:block`}
-            >
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold">ফার্মেসি অ্যাপ</h2>
-                <button
-                  onClick={() => setIsSidebarOpen(false)}
-                  className="md:hidden text-2xl"
-                >
-                  ✕
-                </button>
-              </div>
+            <div className="w-64 bg-gray-800 text-white h-screen p-4 fixed">
+              <h2 className="text-xl font-bold mb-6">ফার্মেসি অ্যাপ</h2>
               <nav className="space-y-2">
                 <button
-                  onClick={() => { setCurrentPage('dashboard'); setIsSidebarOpen(false); }}
-                  className={`w-full text-left p-3 rounded-md text-sm ${
-                    currentPage === 'dashboard' ? 'bg-blue-600' : 'hover:bg-gray-700'
-                  }`}
+                  onClick={() => setCurrentPage('dashboard')}
+                  className={`w-full text-left p-2 rounded-md ${currentPage === 'dashboard' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
                 >
                   হোম
                 </button>
                 <button
-                  onClick={() => { setCurrentPage('inventory'); setIsSidebarOpen(false); }}
-                  className={`w-full text-left p-3 rounded-md text-sm ${
-                    currentPage === 'inventory' ? 'bg-blue-600' : 'hover:bg-gray-700'
-                  }`}
+                  onClick={() => setCurrentPage('inventory')}
+                  className={`w-full text-left p-2 rounded-md ${currentPage === 'inventory' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
                 >
                   ইনভেন্টরি ম্যানেজমেন্ট
                 </button>
                 <button
-                  onClick={() => { setCurrentPage('add-medicine'); setIsSidebarOpen(false); }}
-                  className={`w-full text-left p-3 rounded-md text-sm ${
-                    currentPage === 'add-medicine' ? 'bg-blue-600' : 'hover:bg-gray-700'
-                  }`}
+                  onClick={() => setCurrentPage('add-medicine')}
+                  className={`w-full text-left p-2 rounded-md ${currentPage === 'add-medicine' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
                 >
                   নতুন ওষুধ যোগ করুন
                 </button>
                 <button
-                  onClick={() => { setCurrentPage('new-sale'); setIsSidebarOpen(false); }}
-                  className={`w-full text-left p-3 rounded-md text-sm ${
-                    currentPage === 'new-sale' ? 'bg-blue-600' : 'hover:bg-gray-700'
-                  }`}
+                  onClick={() => setCurrentPage('new-sale')}
+                  className={`w-full text-left p-2 rounded-md ${currentPage === 'new-sale' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
                 >
                   নতুন বিক্রয়
                 </button>
                 <button
-                  onClick={() => { setCurrentPage('sales-report'); setIsSidebarOpen(false); }}
-                  className={`w-full text-left p-3 rounded-md text-sm ${
-                    currentPage === 'sales-report' ? 'bg-blue-600' : 'hover:bg-gray-700'
-                  }`}
+                  onClick={() => setCurrentPage('sales-report')}
+                  className={`w-full text-left p-2 rounded-md ${currentPage === 'sales-report' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
                 >
                   বিক্রয় রিপোর্ট
                 </button>
                 <button
-                  onClick={() => { setCurrentPage('profit-loss'); setIsSidebarOpen(false); }}
-                  className={`w-full text-left p-3 rounded-md text-sm ${
-                    currentPage === 'profit-loss' ? 'bg-blue-600' : 'hover:bg-gray-700'
-                  }`}
+                  onClick={() => setCurrentPage('profit-loss')}
+                  className={`w-full text-left p-2 rounded-md ${currentPage === 'profit-loss' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
                 >
                   লাভ/ক্ষতি রিপোর্ট
                 </button>
                 <button
-                  onClick={() => { setCurrentPage('profile'); setIsSidebarOpen(false); }}
-                  className={`w-full text-left p-3 rounded-md text-sm ${
-                    currentPage === 'profile' ? 'bg-blue-600' : 'hover:bg-gray-700'
-                  }`}
+                  onClick={() => setCurrentPage('profile')}
+                  className={`w-full text-left p-2 rounded-md ${currentPage === 'profile' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
                 >
                   প্রোফাইল
                 </button>
                 <button
-                  onClick={() => { setCurrentPage('subscription'); setIsSidebarOpen(false); }}
-                  className={`w-full text-left p-3 rounded-md text-sm ${
-                    currentPage === 'subscription' ? 'bg-blue-600' : 'hover:bg-gray-700'
-                  }`}
+                  onClick={() => setCurrentPage('subscription')}
+                  className={`w-full text-left p-2 rounded-md ${currentPage === 'subscription' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
                 >
                   সাবস্ক্রিপশন
                 </button>
                 <button
-                  onClick={() => { setIsLoggedIn(false); setIsSidebarOpen(false); }}
-                  className="w-full text-left p-3 rounded-md text-sm hover:bg-red-700"
+                  onClick={() => setIsLoggedIn(false)}
+                  className="w-full text-left p-2 rounded-md hover:bg-red-700"
                 >
                   লগআউট
                 </button>
@@ -516,173 +458,156 @@
           )}
 
           {/* মূল কন্টেন্ট */}
-          <div className={`p-4 ${isLoggedIn ? 'md:ml-64' : ''}`}>
+          <div className={`flex-1 ${isLoggedIn ? 'ml-64' : ''} flex justify-center items-center`}>
             {!isLoggedIn ? (
-              <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-100 to-green-100">
-                <div className="bg-white p-8 rounded-lg shadow-lg w-[95%] max-w-sm">
-                  {isRegistering ? (
-                    <>
-                      <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">ফার্মেসি রেজিস্ট্রেশন</h2>
-                      {loginError && (
-                        <p className="text-red-600 bg-red-100 p-3 rounded-md mb-4 text-sm text-center">
-                          ⚠️ {loginError}
-                        </p>
-                      )}
-                      <form onSubmit={handleRegister} className="space-y-3">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700">ফার্মেসির নাম</label>
-                          <input
-                            type="text"
-                            name="name"
-                            value={pharmacyInfo.name}
-                            onChange={handleInputChange}
-                            className="mt-1 block w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700">মালিকের নাম</label>
-                          <input
-                            type="text"
-                            name="owner"
-                            value={pharmacyInfo.owner}
-                            onChange={handleInputChange}
-                            className="mt-1 block w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700">লাইসেন্স নম্বর</label>
-                          <input
-                            type="text"
-                            name="license"
-                            value={pharmacyInfo.license}
-                            onChange={handleInputChange}
-                            className="mt-1 block w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700">ঠিকানা</label>
-                          <input
-                            type="text"
-                            name="address"
-                            value={pharmacyInfo.address}
-                            onChange={handleInputChange}
-                            className="mt-1 block w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700">ফোন নম্বর</label>
-                          <input
-                            type="tel"
-                            name="phone"
-                            value={pharmacyInfo.phone}
-                            onChange={handleInputChange}
-                            className="mt-1 block w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700">ইমেইল</label>
-                          <input
-                            type="email"
-                            name="email"
-                            value={pharmacyInfo.email}
-                            onChange={handleInputChange}
-                            className="mt-1 block w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700">পাসওয়ার্ড</label>
-                          <input
-                            type="password"
-                            name="password"
-                            value={pharmacyInfo.password}
-                            onChange={handleInputChange}
-                            className="mt-1 block w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                            required
-                          />
-                        </div>
-                        <button
-                          type="submit"
-                          className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white p-3 rounded-md hover:scale-105 transition-transform active:bg-opacity-80"
-                        >
-                          রেজিস্টার করুন
-                        </button>
-                      </form>
-                      <p className="mt-4 text-center text-sm">
-                        ইতিমধ্যে একাউন্ট আছে?{' '}
-                        <button
-                          onClick={() => { setIsRegistering(false); setLoginError(''); }}
-                          className="text-blue-600 hover:underline inline-flex items-center"
-                        >
-                          🔄 লগইন করুন
-                        </button>
-                      </p>
-                      <p className="mt-4 text-center text-sm text-blue-600">
-                        ৩০ দিনের ফ্রি ট্রায়াল উপভোগ করুন!
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">লগইন</h2>
-                      {loginError && (
-                        <p className="text-red-600 bg-red-100 p-3 rounded-md mb-4 text-sm text-center">
-                          ⚠️ {loginError}
-                        </p>
-                      )}
-                      <form onSubmit={handleLogin} className="space-y-3">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700">ইমেইল</label>
-                          <input
-                            type="email"
-                            name="email"
-                            className="mt-1 block w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700">পাসওয়ার্ড</label>
-                          <input
-                            type="password"
-                            name="password"
-                            className="mt-1 block w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                            required
-                          />
-                        </div>
-                        <button
-                          type="submit"
-                          className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white p-3 rounded-md hover:scale-105 transition-transform active:bg-opacity-80"
-                        >
-                          লগইন
-                        </button>
-                      </form>
-                      <p className="mt-4 text-center text-sm">
-                        নতুন ব্যবহারকারী?{' '}
-                        <button
-                          onClick={() => { setIsRegistering(true); setLoginError(''); }}
-                          className="text-blue-600 hover:underline inline-flex items-center"
-                        >
-                          🔄 রেজিস্টার করুন
-                        </button>
-                      </p>
-                      <p className="mt-4 text-center text-sm text-blue-600">
-                        ৩০ দিনের ফ্রি ট্রায়াল উপভোগ করুন!
-                      </p>
-                    </>
-                  )}
-                </div>
+              <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
+                {isRegistering ? (
+                  <>
+                    <h2 className="text-2xl font-semibold mb-4 text-center">ফার্মেসি রেজিস্ট্রেশন</h2>
+                    <form onSubmit={handleRegister} className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">ফার্মেসির নাম</label>
+                        <input
+                          type="text"
+                          name="name"
+                          value={pharmacyInfo.name}
+                          onChange={handleInputChange}
+                          className="mt-1 block w-full p-2 border rounded-md"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">মালিকের নাম</label>
+                        <input
+                          type="text"
+                          name="owner"
+                          value={pharmacyInfo.owner}
+                          onChange={handleInputChange}
+                          className="mt-1 block w-full p-2 border rounded-md"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">লাইসেন্স নম্বর</label>
+                        <input
+                          type="text"
+                          name="license"
+                          value={pharmacyInfo.license}
+                          onChange={handleInputChange}
+                          className="mt-1 block w-full p-2 border rounded-md"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">ঠিকানা</label>
+                        <input
+                          type="text"
+                          name="address"
+                          value={pharmacyInfo.address}
+                          onChange={handleInputChange}
+                          className="mt-1 block w-full p-2 border rounded-md"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">ফোন নম্বর</label>
+                        <input
+                          type="tel"
+                          name="phone"
+                          value={pharmacyInfo.phone}
+                          onChange={handleInputChange}
+                          className="mt-1 block w-full p-2 border rounded-md"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">ইমেইল</label>
+                        <input
+                          type="email"
+                          name="email"
+                          value={pharmacyInfo.email}
+                          onChange={handleInputChange}
+                          className="mt-1 block w-full p-2 border rounded-md"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">পাসওয়ার্ড</label>
+                        <input
+                          type="password"
+                          name="password"
+                          value={pharmacyInfo.password}
+                          onChange={handleInputChange}
+                          className="mt-1 block w-full p-2 border rounded-md"
+                          required
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700"
+                      >
+                        রেজিস্টার করুন
+                      </button>
+                    </form>
+                    <p className="mt-4 text-center">
+                      ইতিমধ্যে একাউন্ট আছে?{' '}
+                      <button
+                        onClick={() => setIsRegistering(false)}
+                        className="text-blue-600 hover:underline"
+                      >
+                        লগইন করুন
+                      </button>
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-2xl font-semibold mb-4 text-center">লগইন</h2>
+                    {loginError && <p className="text-red-600 text-center mb-4">{loginError}</p>}
+                    <form onSubmit={handleLogin} className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">ইমেইল</label>
+                        <input
+                          type="email"
+                          name="email"
+                          className="mt-1 block w-full p-2 border rounded-md"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">পাসওয়ার্ড</label>
+                        <input
+                          type="password"
+                          name="password"
+                          className="mt-1 block w-full p-2 border rounded-md"
+                          required
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700"
+                      >
+                        লগইন
+                      </button>
+                    </form>
+                    <p className="mt-4 text-center">
+                      নতুন ব্যবহারকারী?{' '}
+                      <button
+                        onClick={() => setIsRegistering(true)}
+                        className="text-blue-600 hover:underline"
+                      >
+                        রেজিস্টার করুন
+                      </button>
+                    </p>
+                  </>
+                )}
               </div>
             ) : (
-              <div className="p-4 md:p-6 w-full max-w-5xl mx-auto">
-                <div className="bg-white p-4 md:p-6 rounded-lg shadow-md">
+              <div className="p-6 w-full max-w-5xl">
+                <div className="bg-white p-6 rounded-lg shadow-md">
                   {currentPage === 'dashboard' && (
                     <>
                       <h2 className="text-2xl font-semibold mb-4 text-center">স্বাগতম, {pharmacyInfo.owner}!</h2>
-                      <div className="mb-6 text-sm">
+                      <div className="mb-6">
                         <h3 className="text-xl font-semibold mb-2 text-center">ফার্মেসির তথ্য</h3>
                         <p className="text-center">ফার্মেসির নাম: {pharmacyInfo.name}</p>
                         <p className="text-center">লাইসেন্স নম্বর: {pharmacyInfo.license}</p>
@@ -696,7 +621,7 @@
                           <p className="text-red-600">{lowStockMedicines.length}টি</p>
                           <button
                             onClick={() => setShowLowStockModal(true)}
-                            className="mt-2 text-blue-600 hover:underline text-sm"
+                            className="mt-2 text-blue-600 hover:underline"
                           >
                             বিস্তারিত দেখুন
                           </button>
@@ -706,7 +631,7 @@
                           <p className="text-yellow-600">{expiringMedicines.length}টি</p>
                           <button
                             onClick={() => setShowExpiryModal(true)}
-                            className="mt-2 text-blue-600 hover:underline text-sm"
+                            className="mt-2 text-blue-600 hover:underline"
                           >
                             বিস্তারিত দেখুন
                           </button>
@@ -716,17 +641,17 @@
                           <p className="text-blue-600">{sales.slice(-5).length}টি</p>
                           <button
                             onClick={() => setCurrentPage('sales-report')}
-                            className="mt-2 text-blue-600 hover:underline text-sm"
+                            className="mt-2 text-blue-600 hover:underline"
                           >
                             বিস্তারিত দেখুন
                           </button>
                         </div>
                       </div>
-                      <div className="mb-6 p-4 bg-blue-100 rounded-md text-center text-sm">
-                        <p className="text-blue-800">আপনার ৩০ দিনের ফ্রি ট্রায়াল চলছে। বাকি আছে: ২৮ দিন।</p>
+                      <div className="mb-6 p-4 bg-blue-100 rounded-md">
+                        <p className="text-blue-800 text-center">আপনার ৩০ দিনের ফ্রি ট্রায়াল চলছে। বাকি আছে: ২৮ দিন।</p>
                         <button
                           onClick={() => setCurrentPage('subscription')}
-                          className="mt-2 text-blue-600 hover:underline"
+                          className="mt-2 text-blue-600 hover:underline block mx-auto"
                         >
                           প্ল্যান আপগ্রেড করুন
                         </button>
@@ -738,17 +663,17 @@
                     <>
                       <h2 className="text-2xl font-semibold mb-4 text-center">ইনভেন্টরি ম্যানেজমেন্ট</h2>
                       <div className="mb-6">
-                        <div className="flex flex-col sm:flex-row gap-4 mb-4 p-4 bg-gray-50 rounded-md shadow-md">
+                        <div className="flex gap-4 mb-4 p-4 bg-gray-50 rounded-md shadow-md">
                           <input
                             type="text"
                             placeholder="নাম, জেনেরিক, কোম্পানি, বা ফর্মুলেশন দিয়ে সার্চ করুন"
                             value={inventorySearch}
                             onChange={(e) => setInventorySearch(e.target.value)}
-                            className="flex-1 p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                            className="flex-1 p-2 border rounded-md"
                           />
                           <button
                             onClick={() => setInventorySearch('')}
-                            className="bg-gradient-to-r from-gray-600 to-gray-700 text-white p-3 rounded-md hover:scale-105 transition-transform active:bg-opacity-80 text-sm"
+                            className="bg-gray-600 text-white p-2 rounded-md hover:bg-gray-700"
                           >
                             রিসেট
                           </button>
@@ -764,9 +689,9 @@
                                 <th className="border p-2">ফর্মুলেশন</th>
                                 <th className="border p-2">পাওয়ার</th>
                                 <th className="border p-2">স্টক</th>
-                                <th className="border p-2">ক্রয় মূল্য</th>
-                                <th className="border p-2">বিক্রয় মূল্য</th>
-                                <th className="border p-2">মেয়াদোত্তীর্ণ</th>
+                                <th className="border p-2">ক্রয় মূল্য (টাকা)</th>
+                                <th className="border p-2">বিক্রয় মূল্য (টাকা)</th>
+                                <th className="border p-2">মেয়াদোত্তীর্ণ তারিখ</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -814,13 +739,13 @@
                   {currentPage === 'add-medicine' && (
                     <>
                       <h2 className="text-2xl font-semibold mb-4 text-center">নতুন ওষুধ যোগ করুন</h2>
-                      <form onSubmit={handleAddMedicine} className="space-y-3 max-w-lg mx-auto">
+                      <form onSubmit={handleAddMedicine} className="space-y-4 max-w-lg mx-auto">
                         <div>
                           <label className="block text-sm font-medium text-gray-700">ওষুধের নাম</label>
                           <input
                             type="text"
                             name="name"
-                            className="mt-1 block w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                            className="mt-1 block w-full p-2 border rounded-md"
                             required
                           />
                         </div>
@@ -829,7 +754,7 @@
                           <input
                             type="text"
                             name="generic"
-                            className="mt-1 block w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                            className="mt-1 block w-full p-2 border rounded-md"
                             required
                           />
                         </div>
@@ -838,7 +763,7 @@
                           <input
                             type="text"
                             name="company"
-                            className="mt-1 block w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                            className="mt-1 block w-full p-2 border rounded-md"
                             required
                           />
                         </div>
@@ -846,7 +771,7 @@
                           <label className="block text-sm font-medium text-gray-700">ফর্মুলেশন</label>
                           <select
                             name="formulation"
-                            className="mt-1 block w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                            className="mt-1 block w-full p-2 border rounded-md"
                             required
                           >
                             <option value="">ফর্মুলেশন নির্বাচন করুন</option>
@@ -866,7 +791,7 @@
                           <input
                             type="text"
                             name="power"
-                            className="mt-1 block w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                            className="mt-1 block w-full p-2 border rounded-md"
                             required
                           />
                         </div>
@@ -875,7 +800,7 @@
                           <input
                             type="number"
                             name="stock"
-                            className="mt-1 block w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                            className="mt-1 block w-full p-2 border rounded-md"
                             required
                           />
                         </div>
@@ -885,7 +810,7 @@
                             type="number"
                             name="purchasePrice"
                             step="0.01"
-                            className="mt-1 block w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                            className="mt-1 block w-full p-2 border rounded-md"
                             required
                           />
                         </div>
@@ -895,7 +820,7 @@
                             type="number"
                             name="salePrice"
                             step="0.01"
-                            className="mt-1 block w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                            className="mt-1 block w-full p-2 border rounded-md"
                             required
                           />
                         </div>
@@ -904,13 +829,13 @@
                           <input
                             type="date"
                             name="expiry"
-                            className="mt-1 block w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                            className="mt-1 block w-full p-2 border rounded-md"
                             required
                           />
                         </div>
                         <button
                           type="submit"
-                          className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white p-3 rounded-md hover:scale-105 transition-transform active:bg-opacity-80 text-sm"
+                          className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700"
                         >
                           ওষুধ যোগ করুন
                         </button>
@@ -923,13 +848,13 @@
                       <h2 className="text-2xl font-semibold mb-4 text-center">নতুন বিক্রয়</h2>
                       <div className="mb-6">
                         <h3 className="text-xl font-semibold mb-2 text-center">নতুন বিক্রয় যোগ করুন</h3>
-                        <form onSubmit={handleAddSale} className="space-y-3 max-w-lg mx-auto">
+                        <form onSubmit={handleAddSale} className="space-y-4 max-w-lg mx-auto">
                           <div>
                             <label className="block text-sm font-medium text-gray-700">ওষুধের নাম</label>
                             <select
                               name="medicineName"
                               onChange={handleMedicineSelection}
-                              className="mt-1 block w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                              className="mt-1 block w-full p-2 border rounded-md"
                               required
                             >
                               <option value="">ওষুধ নির্বাচন করুন</option>
@@ -943,7 +868,7 @@
                             <input
                               type="number"
                               value={selectedMedicinePrice || ''}
-                              className="mt-1 block w-full p-3 border rounded-md bg-gray-100 text-sm"
+                              className="mt-1 block w-full p-2 border rounded-md bg-gray-100"
                               readOnly
                             />
                           </div>
@@ -954,7 +879,7 @@
                               name="quantity"
                               value={quantity}
                               onChange={handleQuantityChange}
-                              className="mt-1 block w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                              className="mt-1 block w-full p-2 border rounded-md"
                               required
                             />
                           </div>
@@ -963,7 +888,7 @@
                             <input
                               type="date"
                               name="date"
-                              className="mt-1 block w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                              className="mt-1 block w-full p-2 border rounded-md"
                               required
                             />
                           </div>
@@ -972,13 +897,13 @@
                             <input
                               type="number"
                               value={selectedMedicinePrice && quantity ? (selectedMedicinePrice * quantity).toFixed(2) : ''}
-                              className="mt-1 block w-full p-3 border rounded-md bg-gray-100 text-sm"
+                              className="mt-1 block w-full p-2 border rounded-md bg-gray-100"
                               readOnly
                             />
                           </div>
                           <button
                             type="submit"
-                            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white p-3 rounded-md hover:scale-105 transition-transform active:bg-opacity-80 text-sm"
+                            className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700"
                           >
                             বিক্রয় যোগ করুন
                           </button>
@@ -991,38 +916,38 @@
                     <>
                       <h2 className="text-2xl font-semibold mb-4 text-center">বিক্রয় রিপোর্ট</h2>
                       <div className="mb-6">
-                        <div className="flex flex-col sm:flex-row gap-4 mb-4 p-4 bg-gray-50 rounded-md shadow-md">
+                        <div className="flex flex-col md:flex-row gap-4 mb-4 p-4 bg-gray-50 rounded-md shadow-md">
                           <input
                             type="text"
                             placeholder="ওষুধের নাম দিয়ে সার্চ করুন"
                             value={salesSearch}
                             onChange={(e) => setSalesSearch(e.target.value)}
-                            className="flex-1 p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                            className="flex-1 p-2 border rounded-md"
                           />
                           <input
                             type="date"
                             placeholder="শুরু তারিখ"
                             value={salesDateRange.start}
                             onChange={(e) => setSalesDateRange({ ...salesDateRange, start: e.target.value })}
-                            className="flex-1 p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                            className="flex-1 p-2 border rounded-md"
                           />
                           <input
                             type="date"
                             placeholder="শেষ তারিখ"
                             value={salesDateRange.end}
                             onChange={(e) => setSalesDateRange({ ...salesDateRange, end: e.target.value })}
-                            className="flex-1 p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                            className="flex-1 p-2 border rounded-md"
                           />
                           <button
-                            onClick={() => { setSalesDateRange({ start: '', end: '' }); setSalesSearch(''); }}
-                            className="bg-gradient-to-r from-gray-600 to-gray-700 text-white p-3 rounded-md hover:scale-105 transition-transform active:bg-opacity-80 text-sm"
+                            onClick={() => setSalesDateRange({ start: '', end: '' }) || setSalesSearch('')}
+                            className="bg-gray-600 text-white p-2 rounded-md hover:bg-gray-700"
                           >
                             রিসেট
                           </button>
                         </div>
                         <h3 className="text-xl font-semibold mb-2 text-center">বিক্রয়ের তালিকা</h3>
                         <div className="overflow-x-auto">
-                          <table className="w-full border-collapse mx-auto text-sm">
+                          <table className="w-full border-collapse mx-auto">
                             <thead>
                               <tr className="bg-gray-200">
                                 <th className="border p-2">ওষুধের নাম</th>
@@ -1046,21 +971,15 @@
                       </div>
                       <div className="mb-6">
                         <h3 className="text-xl font-semibold mb-2 text-center">দৈনিক বিক্রয় চার্ট</h3>
-                        <div className="w-full max-w-lg mx-auto">
-                          <canvas id="salesChart" className="w-full h-auto"></canvas>
-                        </div>
+                        <canvas id="salesChart" className="max-w-lg mx-auto"></canvas>
                       </div>
                       <div className="mb-6">
                         <h3 className="text-xl font-semibold mb-2 text-center">মাসিক বিক্রয় চার্ট</h3>
-                        <div className="w-full max-w-lg mx-auto">
-                          <canvas id="monthlySalesChart" className="w-full h-auto"></canvas>
-                        </div>
+                        <canvas id="monthlySalesChart" className="max-w-lg mx-auto"></canvas>
                       </div>
                       <div>
                         <h3 className="text-xl font-semibold mb-2 text-center">সাপ্তাহিক বিক্রয় চার্ট</h3>
-                        <div className="w-full max-w-lg mx-auto">
-                          <canvas id="weeklySalesChart" className="w-full h-auto"></canvas>
-                        </div>
+                        <canvas id="weeklySalesChart" className="max-w-lg mx-auto"></canvas>
                       </div>
                     </>
                   )}
@@ -1069,41 +988,41 @@
                     <>
                       <h2 className="text-2xl font-semibold mb-4 text-center">লাভ/ক্ষতি রিপোর্ট</h2>
                       <div className="mb-6">
-                        <div className="flex flex-col sm:flex-row gap-4 mb-4 p-4 bg-gray-50 rounded-md shadow-md">
+                        <div className="flex flex-col md:flex-row gap-4 mb-4 p-4 bg-gray-50 rounded-md shadow-md">
                           <input
                             type="text"
                             placeholder="ওষুধের নাম দিয়ে সার্চ করুন"
                             value={profitSearch}
                             onChange={(e) => setProfitSearch(e.target.value)}
-                            className="flex-1 p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                            className="flex-1 p-2 border rounded-md"
                           />
                           <input
                             type="date"
                             placeholder="শুরু তারিখ"
                             value={profitDateRange.start}
                             onChange={(e) => setProfitDateRange({ ...profitDateRange, start: e.target.value })}
-                            className="flex-1 p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                            className="flex-1 p-2 border rounded-md"
                           />
                           <input
                             type="date"
                             placeholder="শেষ তারিখ"
                             value={profitDateRange.end}
                             onChange={(e) => setProfitDateRange({ ...profitDateRange, end: e.target.value })}
-                            className="flex-1 p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                            className="flex-1 p-2 border rounded-md"
                           />
                           <button
-                            onClick={() => { setProfitDateRange({ start: '', end: '' }); setProfitSearch(''); }}
-                            className="bg-gradient-to-r from-gray-600 to-gray-700 text-white p-3 rounded-md hover:scale-105 transition-transform active:bg-opacity-80 text-sm"
+                            onClick={() => setProfitDateRange({ start: '', end: '' }) || setProfitSearch('')}
+                            className="bg-gray-600 text-white p-2 rounded-md hover:bg-gray-700"
                           >
                             রিসেট
                           </button>
                         </div>
                         <h3 className="text-xl font-semibold mb-2 text-center">বিক্রয়ের লাভ/ক্ষতি</h3>
-                        <p className="text-center text-green-600 text-sm">
+                        <p className="text-center text-green-600">
                           মোট লাভ: {filteredProfit.reduce((sum, sale) => sum + sale.profit, 0).toFixed(2)} টাকা
                         </p>
                         <div className="overflow-x-auto">
-                          <table className="w-full border-collapse mx-auto text-sm">
+                          <table className="w-full border-collapse mx-auto">
                             <thead>
                               <tr className="bg-gray-200">
                                 <th className="border p-2">ওষুধের নাম</th>
@@ -1133,7 +1052,7 @@
                   {currentPage === 'profile' && (
                     <>
                       <h2 className="text-2xl font-semibold mb-4 text-center">প্রোফাইল এডিট করুন</h2>
-                      <form onSubmit={handleProfileUpdate} className="space-y-3 max-w-lg mx-auto">
+                      <form onSubmit={handleProfileUpdate} className="space-y-4 max-w-lg mx-auto">
                         <div>
                           <label className="block text-sm font-medium text-gray-700">ফার্মেসির নাম</label>
                           <input
@@ -1141,7 +1060,7 @@
                             name="name"
                             value={pharmacyInfo.name}
                             onChange={handleInputChange}
-                            className="mt-1 block w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                            className="mt-1 block w-full p-2 border rounded-md"
                             required
                           />
                         </div>
@@ -1152,7 +1071,7 @@
                             name="owner"
                             value={pharmacyInfo.owner}
                             onChange={handleInputChange}
-                            className="mt-1 block w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                            className="mt-1 block w-full p-2 border rounded-md"
                             required
                           />
                         </div>
@@ -1163,7 +1082,7 @@
                             name="license"
                             value={pharmacyInfo.license}
                             onChange={handleInputChange}
-                            className="mt-1 block w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                            className="mt-1 block w-full p-2 border rounded-md"
                             required
                           />
                         </div>
@@ -1174,7 +1093,7 @@
                             name="address"
                             value={pharmacyInfo.address}
                             onChange={handleInputChange}
-                            className="mt-1 block w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                            className="mt-1 block w-full p-2 border rounded-md"
                             required
                           />
                         </div>
@@ -1185,7 +1104,7 @@
                             name="phone"
                             value={pharmacyInfo.phone}
                             onChange={handleInputChange}
-                            className="mt-1 block w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                            className="mt-1 block w-full p-2 border rounded-md"
                             required
                           />
                         </div>
@@ -1196,13 +1115,13 @@
                             name="email"
                             value={pharmacyInfo.email}
                             onChange={handleInputChange}
-                            className="mt-1 block w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                            className="mt-1 block w-full p-2 border rounded-md"
                             required
                           />
                         </div>
                         <button
                           type="submit"
-                          className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white p-3 rounded-md hover:scale-105 transition-transform active:bg-opacity-80 text-sm"
+                          className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700"
                         >
                           প্রোফাইল আপডেট করুন
                         </button>
@@ -1213,15 +1132,15 @@
                   {currentPage === 'subscription' && (
                     <>
                       <h2 className="text-2xl font-semibold mb-4 text-center">সাবস্ক্রিপশন</h2>
-                      <div className="mb-6 p-4 bg-blue-100 rounded-md text-center text-sm">
-                        <p className="text-blue-800">আপনার ৩০ দিনের ফ্রি ট্রায়াল চলছে। বাকি আছে: ২৮ দিন।</p>
-                        <p className="text-blue-800 mt-2">আপনার প্ল্যান আপগ্রেড করুন:</p>
-                        <ul className="list-disc pl-5 mt-2 mx-auto max-w-md text-left">
+                      <div className="mb-6 p-4 bg-blue-100 rounded-md">
+                        <p className="text-blue-800 text-center">আপনার ৩০ দিনের ফ্রি ট্রায়াল চলছে। বাকি আছে: ২৮ দিন।</p>
+                        <p className="text-blue-800 mt-2 text-center">আপনার প্ল্যান আপগ্রেড করুন:</p>
+                        <ul className="list-disc pl-5 mt-2 mx-auto max-w-md">
                           <li>বেসিক: সীমিত ফিচার, ছোট ফার্মেসির জন্য উপযুক্ত।</li>
                           <li>স্ট্যান্ডার্ড: সকল মৌলিক ফিচার + সেলস রিপোর্ট।</li>
                           <li>প্রিমিয়াম: সকল ফিচার + অগ্রাধিকার সাপোর্ট।</li>
                         </ul>
-                        <button className="mt-2 text-blue-600 hover:underline">
+                        <button className="mt-2 text-blue-600 hover:underline block mx-auto">
                           এখনই আপগ্রেড করুন
                         </button>
                       </div>
