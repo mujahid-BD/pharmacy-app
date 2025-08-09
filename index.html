@@ -93,8 +93,6 @@
       const [salesDateRange, setSalesDateRange] = useState({ start: '', end: '' });
       const [profitSearch, setProfitSearch] = useState('');
       const [profitDateRange, setProfitDateRange] = useState({ start: '', end: '' });
-      const [showLowStockModal, setShowLowStockModal] = useState(false);
-      const [showExpiryModal, setShowExpiryModal] = useState(false);
 
       const handleRegister = (e) => {
         e.preventDefault();
@@ -196,13 +194,27 @@
         setQuantity('');
       };
 
-      // ফিল্টারিং লজিক
-      const filteredMedicines = medicines.filter(m =>
-        m.name.toLowerCase().includes(inventorySearch.toLowerCase()) ||
-        m.generic.toLowerCase().includes(inventorySearch.toLowerCase()) ||
-        m.company.toLowerCase().includes(inventorySearch.toLowerCase()) ||
-        m.formulation.toLowerCase().includes(inventorySearch.toLowerCase())
-      );
+      const getExpiryStatus = (expiryDate) => {
+        const today = new Date();
+        const expiry = new Date(expiryDate);
+        const diffDays = (expiry - today) / (1000 * 60 * 60 * 24);
+        return diffDays <= 0 ? 'expired' : diffDays <= 30 ? 'near-expiry' : 'valid';
+      };
+
+      const filteredMedicines = medicines.filter(m => {
+        if (inventorySearch === 'low stock') {
+          return m.stock <= 10;
+        }
+        if (inventorySearch === 'expired') {
+          return getExpiryStatus(m.expiry) !== 'valid';
+        }
+        return (
+          m.name.toLowerCase().includes(inventorySearch.toLowerCase()) ||
+          m.generic.toLowerCase().includes(inventorySearch.toLowerCase()) ||
+          m.company.toLowerCase().includes(inventorySearch.toLowerCase()) ||
+          m.formulation.toLowerCase().includes(inventorySearch.toLowerCase())
+        );
+      });
 
       const filteredSales = sales.filter(sale => {
         const matchesSearch = sale.medicineName.toLowerCase().includes(salesSearch.toLowerCase());
@@ -226,17 +238,6 @@
         return matchesSearch && matchesDate;
       });
 
-      // কম স্টক এবং মেয়াদোত্তীর্ণ ওষুধ চেক
-      const lowStockMedicines = medicines.filter(m => m.stock <= 10);
-      const getExpiryStatus = (expiryDate) => {
-        const today = new Date();
-        const expiry = new Date(expiryDate);
-        const diffDays = (expiry - today) / (1000 * 60 * 60 * 24);
-        return diffDays <= 0 ? 'expired' : diffDays <= 30 ? 'near-expiry' : 'valid';
-      };
-      const expiringMedicines = medicines.filter(m => getExpiryStatus(m.expiry) !== 'valid');
-
-      // মাসিক এবং সাপ্তাহিক বিক্রয় ডেটা
       const getMonthlySales = () => {
         return filteredSales.reduce((acc, sale) => {
           const month = new Date(sale.date).toLocaleString('bn', { month: 'long', year: 'numeric' });
@@ -254,11 +255,9 @@
         }, {});
       };
 
-      // চার্ট ইনিশিয়ালাইজেশন
       useEffect(() => {
         if (currentPage === 'sales-report' && window.Chart) {
           try {
-            // দৈনিক চার্ট
             const ctxDaily = document.getElementById('salesChart')?.getContext('2d');
             if (ctxDaily) {
               new Chart(ctxDaily, {
@@ -283,7 +282,6 @@
               });
             }
 
-            // মাসিক চার্ট
             const ctxMonthly = document.getElementById('monthlySalesChart')?.getContext('2d');
             if (ctxMonthly) {
               const monthlySales = getMonthlySales();
@@ -310,7 +308,6 @@
               });
             }
 
-            // সাপ্তাহিক চার্ট
             const ctxWeekly = document.getElementById('weeklySalesChart')?.getContext('2d');
             if (ctxWeekly) {
               const weeklySales = getWeeklySales();
@@ -343,57 +340,6 @@
 
       return (
         <div className="min-h-screen bg-gray-100 flex">
-          {/* মডাল কম্পোনেন্ট */}
-          {showLowStockModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white p-6 rounded-lg shadow-md max-w-lg w-full">
-                <h3 className="text-xl font-semibold mb-4 text-center">কম স্টকের ওষুধ</h3>
-                {lowStockMedicines.length > 0 ? (
-                  <ul className="list-disc pl-5">
-                    {lowStockMedicines.map(m => (
-                      <li key={m.id}>
-                        {m.name} ({m.generic}) - স্টক: {m.stock}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-center">কোনো কম স্টকের ওষুধ নেই।</p>
-                )}
-                <button
-                  onClick={() => setShowLowStockModal(false)}
-                  className="mt-4 w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700"
-                >
-                  বন্ধ করুন
-                </button>
-              </div>
-            </div>
-          )}
-          {showExpiryModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white p-6 rounded-lg shadow-md max-w-lg w-full">
-                <h3 className="text-xl font-semibold mb-4 text-center">মেয়াদোত্তীর্ণ/আসন্ন মেয়াদোত্তীর্ণ ওষুধ</h3>
-                {expiringMedicines.length > 0 ? (
-                  <ul className="list-disc pl-5">
-                    {expiringMedicines.map(m => (
-                      <li key={m.id}>
-                        {m.name} ({m.generic}) - মেয়াদ: {m.expiry} (
-                        {getExpiryStatus(m.expiry) === 'expired' ? 'মেয়াদোত্তীর্ণ' : 'মেয়াদ শেষ হচ্ছে'})
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-center">কোনো মেয়াদোত্তীর্ণ ওষুধ নেই।</p>
-                )}
-                <button
-                  onClick={() => setShowExpiryModal(false)}
-                  className="mt-4 w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700"
-                >
-                  বন্ধ করুন
-                </button>
-              </div>
-            </div>
-          )}
-
           {/* সাইডবার নেভিগেশন */}
           {isLoggedIn && (
             <div className="w-64 bg-gray-800 text-white h-screen p-4 fixed">
@@ -406,7 +352,7 @@
                   হোম
                 </button>
                 <button
-                  onClick={() => setCurrentPage('inventory')}
+                  onClick={() => { setCurrentPage('inventory'); setInventorySearch(''); }}
                   className={`w-full text-left p-2 rounded-md ${currentPage === 'inventory' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
                 >
                   ইনভেন্টরি ম্যানেজমেন্ট
@@ -618,9 +564,9 @@
                       <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="p-4 bg-red-100 rounded-md text-center">
                           <h4 className="text-lg font-semibold text-red-600">কম স্টকের ওষুধ</h4>
-                          <p className="text-red-600">{lowStockMedicines.length}টি</p>
+                          <p className="text-red-600">{medicines.filter(m => m.stock <= 10).length}টি</p>
                           <button
-                            onClick={() => setShowLowStockModal(true)}
+                            onClick={() => { setCurrentPage('inventory'); setInventorySearch('low stock'); }}
                             className="mt-2 text-blue-600 hover:underline"
                           >
                             বিস্তারিত দেখুন
@@ -628,9 +574,9 @@
                         </div>
                         <div className="p-4 bg-yellow-100 rounded-md text-center">
                           <h4 className="text-lg font-semibold text-yellow-600">মেয়াদোত্তীর্ণ/আসন্ন মেয়াদোত্তীর্ণ</h4>
-                          <p className="text-yellow-600">{expiringMedicines.length}টি</p>
+                          <p className="text-yellow-600">{medicines.filter(m => getExpiryStatus(m.expiry) !== 'valid').length}টি</p>
                           <button
-                            onClick={() => setShowExpiryModal(true)}
+                            onClick={() => { setCurrentPage('inventory'); setInventorySearch('expired'); }}
                             className="mt-2 text-blue-600 hover:underline"
                           >
                             বিস্তারিত দেখুন
@@ -663,10 +609,10 @@
                     <>
                       <h2 className="text-2xl font-semibold mb-4 text-center">ইনভেন্টরি ম্যানেজমেন্ট</h2>
                       <div className="mb-6">
-                        <div className="flex gap-4 mb-4 p-4 bg-gray-50 rounded-md shadow-md">
+                        <div className="flex flex-col md:flex-row gap-4 mb-4 p-4 bg-gray-50 rounded-md shadow-md">
                           <input
                             type="text"
-                            placeholder="নাম, জেনেরিক, কোম্পানি, বা ফর্মুলেশন দিয়ে সার্চ করুন"
+                            placeholder="নাম, জেনেরিক, কোম্পানি, ফর্মুলেশন, বা 'low stock', 'expired' দিয়ে সার্চ করুন"
                             value={inventorySearch}
                             onChange={(e) => setInventorySearch(e.target.value)}
                             className="flex-1 p-2 border rounded-md"
@@ -939,7 +885,7 @@
                             className="flex-1 p-2 border rounded-md"
                           />
                           <button
-                            onClick={() => setSalesDateRange({ start: '', end: '' }) || setSalesSearch('')}
+                            onClick={() => { setSalesDateRange({ start: '', end: '' }); setSalesSearch(''); }}
                             className="bg-gray-600 text-white p-2 rounded-md hover:bg-gray-700"
                           >
                             রিসেট
@@ -1011,7 +957,7 @@
                             className="flex-1 p-2 border rounded-md"
                           />
                           <button
-                            onClick={() => setProfitDateRange({ start: '', end: '' }) || setProfitSearch('')}
+                            onClick={() => { setProfitDateRange({ start: '', end: '' }); setProfitSearch(''); }}
                             className="bg-gray-600 text-white p-2 rounded-md hover:bg-gray-700"
                           >
                             রিসেট
