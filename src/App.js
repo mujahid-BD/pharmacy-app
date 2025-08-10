@@ -9,7 +9,7 @@ const App = () => {
   const [pharmacyInfo, setPharmacyInfo] = useState({
     name: '', owner: '', license: '', address: '', phone: '', email: '', password: ''
   });
-  const [loginCredentials, setLoginCredentials] = useState(null); // Stores pharmacy owner credentials
+  const [loginCredentials, setLoginCredentials] = useState(null);
   const [loginError, setLoginError] = useState('');
   const [medicines, setMedicines] = useState([
     { id: 1, name: 'প্যারাসিটামল', generic: 'Paracetamol', company: 'Square', stock: 100, expiry: '2025-12-31', purchasePrice: 0.8, salePrice: 1.2, formulation: 'Tablet', power: '500mg', purchaseDate: '2025-01-10', invoiceNumber: 'INV001', purchaseQuantity: 100 },
@@ -32,11 +32,14 @@ const App = () => {
   const [profitDateRange, setProfitDateRange] = useState({ start: '', end: '' });
   const [selectedSalesDate, setSelectedSalesDate] = useState('');
   const [purchaseReportFilter, setPurchaseReportFilter] = useState({ month: '', year: '' });
-  const [isAdmin, setIsAdmin] = useState(false); // Admin role state
-  const [username, setUsername] = useState(''); // For admin login
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [username, setUsername] = useState('');
+  const [plan, setPlan] = useState('free'); // Added plan state to fix setPlan error
 
   useEffect(() => {
-    AOS.init();
+    if (typeof AOS !== 'undefined') {
+      AOS.init();
+    }
     setTimeout(() => setIsLoading(false), 2000);
     document.documentElement.className = theme;
     localStorage.setItem('theme', theme);
@@ -59,13 +62,14 @@ const App = () => {
     e.preventDefault();
     const email = e.target.email.value;
     const password = e.target.password.value;
-    const isAdminLogin = e.target.adminLogin?.checked; // Check if admin login is selected
+    const isAdminLogin = e.target.adminLogin?.checked;
 
     if (isAdminLogin) {
       if (handleAdminLogin(email, password)) {
         setIsAdmin(true);
         setCurrentPage('admin-dashboard');
         setLoginError('');
+        setIsLoggedIn(true); // Ensure isLoggedIn is set for admin
       } else {
         setLoginError('অ্যাডমিন ইউজারনেম বা পাসওয়ার্ড ভুল!');
       }
@@ -85,7 +89,6 @@ const App = () => {
   };
 
   const handleAdminLogin = (username, password) => {
-    // Admin credentials check
     return username === 'admin' && password === 'admin123';
   };
 
@@ -320,13 +323,13 @@ const App = () => {
             )}
             {currentPage === 'subscription' && !isAdmin && (
               <Subscription
-                setPlan={setPlan}
+                setPlan={setPlan} // Updated to use defined setPlan
                 theme={theme}
               />
             )}
             {currentPage === 'admin' && isAdmin && (
               <AdminPanel
-                setPlan={setPlan}
+                setPlan={setPlan} // Updated to use defined setPlan
                 isAdmin={isAdmin}
                 setIsAdmin={setIsAdmin}
               />
