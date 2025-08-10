@@ -34,7 +34,7 @@ const App = () => {
   const [purchaseReportFilter, setPurchaseReportFilter] = useState({ month: '', year: '' });
   const [isAdmin, setIsAdmin] = useState(false);
   const [username, setUsername] = useState('');
-  const [plan, setPlan] = useState('free'); // Added plan state to fix setPlan error
+  const [plan, setPlan] = useState('free');
 
   useEffect(() => {
     if (typeof AOS !== 'undefined') {
@@ -69,7 +69,7 @@ const App = () => {
         setIsAdmin(true);
         setCurrentPage('admin-dashboard');
         setLoginError('');
-        setIsLoggedIn(true); // Ensure isLoggedIn is set for admin
+        setIsLoggedIn(true);
       } else {
         setLoginError('অ্যাডমিন ইউজারনেম বা পাসওয়ার্ড ভুল!');
       }
@@ -96,69 +96,94 @@ const App = () => {
     <div className={`min-h-screen bg-gray-100 dark:bg-gray-900 flex ${theme}`}>
       {isLoggedIn && (
         <div className="w-64 bg-gray-800 dark:bg-gray-900 text-white h-screen p-4 fixed">
-          <h2 className="text-xl font-bold mb-6 text-white dark:text-gray-100">ফার্মেসি অ্যাপ</h2>
+          <h2 className="text-xl font-bold mb-6 text-white dark:text-gray-100">
+            {isAdmin ? 'অ্যাডমিন প্যানেল' : 'ফার্মেসি অ্যাপ'}
+          </h2>
           <nav className="space-y-2">
-            <button
-              onClick={() => setCurrentPage('dashboard')}
-              className={`w-full text-left p-2 rounded-md ${currentPage === 'dashboard' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
-            >
-              হোম
-            </button>
-            <button
-              onClick={() => { setCurrentPage('inventory'); setInventorySearch(''); }}
-              className={`w-full text-left p-2 rounded-md ${currentPage === 'inventory' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
-            >
-              ইনভেন্টরি ম্যানেজমেন্ট
-            </button>
-            <button
-              onClick={() => setCurrentPage('add-medicine')}
-              className={`w-full text-left p-2 rounded-md ${currentPage === 'add-medicine' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
-            >
-              নতুন ওষুধ যোগ করুন
-            </button>
-            <button
-              onClick={() => setCurrentPage('new-sale')}
-              className={`w-full text-left p-2 rounded-md ${currentPage === 'new-sale' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
-            >
-              নতুন বিক্রয়
-            </button>
-            <button
-              onClick={() => setCurrentPage('sales-report')}
-              className={`w-full text-left p-2 rounded-md ${currentPage === 'sales-report' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
-            >
-              বিক্রয় রিপোর্ট
-            </button>
-            <button
-              onClick={() => setCurrentPage('profit-loss')}
-              className={`w-full text-left p-2 rounded-md ${currentPage === 'profit-loss' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
-            >
-              লাভ/ক্ষতি রিপোর্ট
-            </button>
-            <button
-              onClick={() => setCurrentPage('purchase-report')}
-              className={`w-full text-left p-2 rounded-md ${currentPage === 'purchase-report' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
-            >
-              ক্রয় রিপোর্ট
-            </button>
-            <button
-              onClick={() => setCurrentPage('profile')}
-              className={`w-full text-left p-2 rounded-md ${currentPage === 'profile' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
-            >
-              প্রোফাইল
-            </button>
-            <button
-              onClick={() => setCurrentPage('subscription')}
-              className={`w-full text-left p-2 rounded-md ${currentPage === 'subscription' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
-            >
-              সাবস্ক্রিপশন
-            </button>
-            {isAdmin && (
-              <button
-                onClick={() => setCurrentPage('admin')}
-                className={`w-full text-left p-2 rounded-md ${currentPage === 'admin' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
-              >
-                অ্যাডমিন প্যানেল
-              </button>
+            {!isAdmin ? (
+              <>
+                <button
+                  onClick={() => setCurrentPage('dashboard')}
+                  className={`w-full text-left p-2 rounded-md ${currentPage === 'dashboard' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
+                >
+                  হোম
+                </button>
+                <button
+                  onClick={() => { setCurrentPage('inventory'); setInventorySearch(''); }}
+                  className={`w-full text-left p-2 rounded-md ${currentPage === 'inventory' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
+                >
+                  ইনভেন্টরি ম্যানেজমেন্ট
+                </button>
+                <button
+                  onClick={() => setCurrentPage('add-medicine')}
+                  className={`w-full text-left p-2 rounded-md ${currentPage === 'add-medicine' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
+                >
+                  নতুন ওষুধ যোগ করুন
+                </button>
+                <button
+                  onClick={() => setCurrentPage('new-sale')}
+                  className={`w-full text-left p-2 rounded-md ${currentPage === 'new-sale' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
+                >
+                  নতুন বিক্রয়
+                </button>
+                <button
+                  onClick={() => setCurrentPage('sales-report')}
+                  className={`w-full text-left p-2 rounded-md ${currentPage === 'sales-report' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
+                >
+                  বিক্রয় রিপোর্ট
+                </button>
+                <button
+                  onClick={() => setCurrentPage('profit-loss')}
+                  className={`w-full text-left p-2 rounded-md ${currentPage === 'profit-loss' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
+                >
+                  লাভ/ক্ষতি রিপোর্ট
+                </button>
+                <button
+                  onClick={() => setCurrentPage('purchase-report')}
+                  className={`w-full text-left p-2 rounded-md ${currentPage === 'purchase-report' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
+                >
+                  ক্রয় রিপোর্ট
+                </button>
+                <button
+                  onClick={() => setCurrentPage('profile')}
+                  className={`w-full text-left p-2 rounded-md ${currentPage === 'profile' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
+                >
+                  প্রোফাইল
+                </button>
+                <button
+                  onClick={() => setCurrentPage('subscription')}
+                  className={`w-full text-left p-2 rounded-md ${currentPage === 'subscription' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
+                >
+                  সাবস্ক্রিপশন
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => setCurrentPage('admin-dashboard')}
+                  className={`w-full text-left p-2 rounded-md ${currentPage === 'admin-dashboard' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
+                >
+                  ড্যাশবোর্ড
+                </button>
+                <button
+                  onClick={() => setCurrentPage('admin')}
+                  className={`w-full text-left p-2 rounded-md ${currentPage === 'admin' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
+                >
+                  প্ল্যান ম্যানেজমেন্ট
+                </button>
+                <button
+                  onClick={() => setCurrentPage('admin-users')}
+                  className={`w-full text-left p-2 rounded-md ${currentPage === 'admin-users' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
+                >
+                  ব্যবহারকারী পরিচালনা
+                </button>
+                <button
+                  onClick={() => setCurrentPage('admin-logs')}
+                  className={`w-full text-left p-2 rounded-md ${currentPage === 'admin-logs' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
+                >
+                  লগ রিপোর্ট
+                </button>
+              </>
             )}
             <button
               onClick={() => { setIsLoggedIn(false); setIsAdmin(false); setCurrentPage('dashboard'); }}
@@ -323,13 +348,13 @@ const App = () => {
             )}
             {currentPage === 'subscription' && !isAdmin && (
               <Subscription
-                setPlan={setPlan} // Updated to use defined setPlan
+                setPlan={setPlan}
                 theme={theme}
               />
             )}
             {currentPage === 'admin' && isAdmin && (
               <AdminPanel
-                setPlan={setPlan} // Updated to use defined setPlan
+                setPlan={setPlan}
                 isAdmin={isAdmin}
                 setIsAdmin={setIsAdmin}
               />
