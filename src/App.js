@@ -9,7 +9,7 @@ const App = () => {
   const [pharmacyInfo, setPharmacyInfo] = useState({
     name: '', owner: '', license: '', address: '', phone: '', email: '', password: ''
   });
-  const [loginCredentials, setLoginCredentials] = useState(null);
+  const [loginCredentials, setLoginCredentials] = useState(null); // Stores pharmacy owner credentials
   const [loginError, setLoginError] = useState('');
   const [medicines, setMedicines] = useState([
     { id: 1, name: 'প্যারাসিটামল', generic: 'Paracetamol', company: 'Square', stock: 100, expiry: '2025-12-31', purchasePrice: 0.8, salePrice: 1.2, formulation: 'Tablet', power: '500mg', purchaseDate: '2025-01-10', invoiceNumber: 'INV001', purchaseQuantity: 100 },
@@ -32,11 +32,11 @@ const App = () => {
   const [profitDateRange, setProfitDateRange] = useState({ start: '', end: '' });
   const [selectedSalesDate, setSelectedSalesDate] = useState('');
   const [purchaseReportFilter, setPurchaseReportFilter] = useState({ month: '', year: '' });
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [plan, setPlan] = useState('free');
+  const [isAdmin, setIsAdmin] = useState(false); // Admin role state
+  const [username, setUsername] = useState(''); // For admin login
 
   useEffect(() => {
-    AOS.init({ duration: 1000 });
+    AOS.init();
     setTimeout(() => setIsLoading(false), 2000);
     document.documentElement.className = theme;
     localStorage.setItem('theme', theme);
@@ -52,18 +52,31 @@ const App = () => {
     setIsLoggedIn(true);
     setIsRegistering(false);
     setCurrentPage('dashboard');
+    setLoginError('');
   };
 
   const handleLogin = (e) => {
     e.preventDefault();
     const email = e.target.email.value;
     const password = e.target.password.value;
-    if (loginCredentials && loginCredentials.email === email && loginCredentials.password === password) {
-      setIsLoggedIn(true);
-      setCurrentPage('dashboard');
-      setLoginError('');
+    const isAdminLogin = e.target.adminLogin?.checked; // Check if admin login is selected
+
+    if (isAdminLogin) {
+      if (handleAdminLogin(email, password)) {
+        setIsAdmin(true);
+        setCurrentPage('admin-dashboard');
+        setLoginError('');
+      } else {
+        setLoginError('অ্যাডমিন ইউজারনেম বা পাসওয়ার্ড ভুল!');
+      }
     } else {
-      setLoginError('ইমেইল বা পাসওয়ার্ড ভুল।');
+      if (loginCredentials && loginCredentials.email === email && loginCredentials.password === password) {
+        setIsLoggedIn(true);
+        setCurrentPage('dashboard');
+        setLoginError('');
+      } else {
+        setLoginError('ইমেইল বা পাসওয়ার্ড ভুল। একাউন্ট নেই? রেজিস্টার করুন।');
+      }
     }
   };
 
@@ -71,10 +84,9 @@ const App = () => {
     setPharmacyInfo({ ...pharmacyInfo, [e.target.name]: e.target.value });
   };
 
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setIsAdmin(false);
-    setCurrentPage('dashboard');
+  const handleAdminLogin = (username, password) => {
+    // Admin credentials check
+    return username === 'admin' && password === 'admin123';
   };
 
   return (
@@ -137,14 +149,16 @@ const App = () => {
             >
               সাবস্ক্রিপশন
             </button>
+            {isAdmin && (
+              <button
+                onClick={() => setCurrentPage('admin')}
+                className={`w-full text-left p-2 rounded-md ${currentPage === 'admin' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
+              >
+                অ্যাডমিন প্যানেল
+              </button>
+            )}
             <button
-              onClick={() => setCurrentPage('admin')}
-              className={`w-full text-left p-2 rounded-md ${currentPage === 'admin' ? 'bg-blue-600' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}
-            >
-              অ্যাডমিন প্যানেল
-            </button>
-            <button
-              onClick={handleLogout}
+              onClick={() => { setIsLoggedIn(false); setIsAdmin(false); setCurrentPage('dashboard'); }}
               className="w-full text-left p-2 rounded-md hover:bg-red-700 dark:hover:bg-red-800"
             >
               লগআউট
@@ -205,19 +219,23 @@ const App = () => {
                 {loginError && <p className="text-red-600 dark:text-red-400 text-center mb-4">{loginError}</p>}
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-100">ইমেইল</label>
-                    <input type="email" name="email" className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" required />
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-100">ইমেইল/ইউজারনেম</label>
+                    <input type="text" name="email" value={username} onChange={(e) => setUsername(e.target.value)} className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" required />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-100">পাসওয়ার্ড</label>
                     <input type="password" name="password" className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" required />
+                  </div>
+                  <div className="flex items-center">
+                    <input type="checkbox" name="adminLogin" id="adminLogin" className="mr-2" />
+                    <label htmlFor="adminLogin" className="text-sm text-gray-700 dark:text-gray-100">আমি অ্যাডমিন</label>
                   </div>
                   <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 dark:hover:bg-blue-800">
                     লগইন
                   </button>
                 </form>
                 <p className="mt-4 text-center text-black dark:text-gray-100">
-                  নতুন ব্যবহারকারী?{' '}
+                  নতুন ফার্মেসি মালিক?{' '}
                   <button onClick={() => setIsRegistering(true)} className="text-blue-600 dark:text-blue-400 hover:underline">
                     রেজিস্টার করুন
                   </button>
@@ -227,7 +245,7 @@ const App = () => {
           </div>
         ) : (
           <div className="p-6 w-full max-w-5xl">
-            {currentPage === 'dashboard' && (
+            {currentPage === 'dashboard' && !isAdmin && (
               <Dashboard
                 pharmacyInfo={pharmacyInfo}
                 medicines={medicines}
@@ -239,24 +257,21 @@ const App = () => {
                 theme={theme}
               />
             )}
-            {currentPage === 'inventory' && (
+            {currentPage === 'inventory' && !isAdmin && (
               <Inventory
                 medicines={medicines}
                 inventorySearch={inventorySearch}
                 setInventorySearch={setInventorySearch}
-                setMedicines={setMedicines}
-                setCurrentPage={setCurrentPage}
               />
             )}
-            {currentPage === 'add-medicine' && (
+            {currentPage === 'add-medicine' && !isAdmin && (
               <AddMedicine
                 medicines={medicines}
                 setMedicines={setMedicines}
                 setCurrentPage={setCurrentPage}
-                plan={plan}
               />
             )}
-            {currentPage === 'new-sale' && (
+            {currentPage === 'new-sale' && !isAdmin && (
               <NewSale
                 medicines={medicines}
                 sales={sales}
@@ -265,10 +280,9 @@ const App = () => {
                 setOrderItems={setOrderItems}
                 orderDate={orderDate}
                 setOrderDate={setOrderDate}
-                setCurrentPage={setCurrentPage}
               />
             )}
-            {currentPage === 'sales-report' && (
+            {currentPage === 'sales-report' && !isAdmin && (
               <SalesReport
                 sales={sales}
                 salesSearch={salesSearch}
@@ -280,17 +294,16 @@ const App = () => {
                 theme={theme}
               />
             )}
-            {currentPage === 'profit-loss' && (
+            {currentPage === 'profit-loss' && !isAdmin && (
               <ProfitLoss
                 sales={sales}
                 profitSearch={profitSearch}
                 setProfitSearch={setProfitSearch}
                 profitDateRange={profitDateRange}
                 setProfitDateRange={setProfitDateRange}
-                theme={theme}
               />
             )}
-            {currentPage === 'purchase-report' && (
+            {currentPage === 'purchase-report' && !isAdmin && (
               <PurchaseReport
                 medicines={medicines}
                 purchaseReportFilter={purchaseReportFilter}
@@ -298,24 +311,33 @@ const App = () => {
                 theme={theme}
               />
             )}
-            {currentPage === 'profile' && (
+            {currentPage === 'profile' && !isAdmin && (
               <Profile
                 pharmacyInfo={pharmacyInfo}
                 setPharmacyInfo={setPharmacyInfo}
                 setCurrentPage={setCurrentPage}
               />
             )}
-            {currentPage === 'subscription' && (
+            {currentPage === 'subscription' && !isAdmin && (
               <Subscription
                 setPlan={setPlan}
                 theme={theme}
               />
             )}
-            {currentPage === 'admin' && (
+            {currentPage === 'admin' && isAdmin && (
               <AdminPanel
                 setPlan={setPlan}
                 isAdmin={isAdmin}
                 setIsAdmin={setIsAdmin}
+              />
+            )}
+            {currentPage === 'admin-dashboard' && isAdmin && (
+              <AdminDashboard
+                pharmacyInfo={pharmacyInfo}
+                medicines={medicines}
+                sales={sales}
+                setCurrentPage={setCurrentPage}
+                theme={theme}
               />
             )}
           </div>
