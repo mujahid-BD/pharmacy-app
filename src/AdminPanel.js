@@ -1,24 +1,7 @@
-const AdminPanel = ({ setPlan, isAdmin, setIsAdmin }) => {
+const AdminPanel = ({ setPlan, isAdmin }) => {
   const [userId, setUserId] = React.useState('');
   const [newPlan, setNewPlan] = React.useState('free');
   const [message, setMessage] = React.useState('');
-  const [username, setUsername] = React.useState('');
-  const [password, setPassword] = React.useState('');
-  const [loginError, setLoginError] = React.useState('');
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    const adminUsername = 'admin';
-    const adminPassword = 'admin123';
-    if (username === adminUsername && password === adminPassword) {
-      setIsAdmin(true);
-      setLoginError('');
-      setUsername('');
-      setPassword('');
-    } else {
-      setLoginError('ইউজারনেম বা পাসওয়ার্ড ভুল!');
-    }
-  };
 
   const handleUpdatePlan = (e) => {
     e.preventDefault();
@@ -28,43 +11,6 @@ const AdminPanel = ({ setPlan, isAdmin, setIsAdmin }) => {
     setUserId('');
     setNewPlan('free');
   };
-
-  if (!isAdmin) {
-    return (
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md max-w-md mx-auto" data-aos="fade-up">
-        <h2 className="text-2xl font-semibold mb-6 text-center text-black dark:text-gray-100">অ্যাডমিন লগইন</h2>
-        {loginError && <p className="text-red-600 dark:text-red-400 text-center mb-4">{loginError}</p>}
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-100">ইউজারনেম</label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-100">পাসওয়ার্ড</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 dark:hover:bg-blue-800"
-          >
-            লগইন
-          </button>
-        </form>
-      </div>
-    );
-  }
 
   return (
     <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md max-w-md mx-auto" data-aos="fade-up">
